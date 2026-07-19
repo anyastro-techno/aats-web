@@ -1,7 +1,8 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import './index.css';
+import './config/i18n'; // Initializes the real-time translation engine
+import App from './App.jsx';
 
 // Real-time functional feature: Automated system performance tracking
 if (typeof window !== 'undefined') {
@@ -16,4 +17,4 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
   </StrictMode>,
-)
+);
