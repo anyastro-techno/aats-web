@@ -38,5 +38,10 @@
     "tailwindcss": "^4.3.3",
     "vite": "^8.1.5",
     "vite-plugin-html": "^3.2.2"
+  },
+  "overrides": {
+    "eslint-plugin-react": {
+      "eslint": "$eslint"
+    }
   }
 }
