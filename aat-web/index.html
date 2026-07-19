@@ -2,12 +2,25 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/assets/branding/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>aat-web</title>
+    <meta name="description" content="AnyAstro Techno Solutions - Enterprise digital transformation, scalable performance architecture, and advanced engineering services." />
+    <meta name="theme-color" content="#000000" />
+    <title>AnyAstro Techno Solutions</title>
+    <style>
+      body { background-color: #000000; margin: 0; }
+      #initial-loader { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #000000; color: #ffffff; font-family: system-ui, sans-serif; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <noscript>
+      <div style="background-color: #000000; color: #ffffff; padding: 40px; text-align: center; font-family: system-ui, sans-serif; border-bottom: 2px solid #E31837;">
+        System Error: Active scripting is strictly required to access the AnyAstro Corporate Portal. Please enable browser scripts to proceed.
+      </div>
+    </noscript>
+    <div id="root">
+      <div id="initial-loader">Loading...</div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
