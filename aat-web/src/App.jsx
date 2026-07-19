@@ -1,9 +1,12 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useState, createContext } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import reactLogo from './assets/react.svg';
 import viteLogo from './assets/vite.svg';
 import heroImg from './assets/hero.png';
+
+// Establish secure, global state management for enterprise localization
+export const LanguageContext = createContext();
 
 // Establishing secure, optimized loading pathways for business portals
 const About = React.lazy(() => import('./pages/About/About'));
@@ -112,20 +115,25 @@ function CorporateHome() {
 }
 
 function App() {
+  // Global language state initialized to default corporate language
+  const [activeLanguage, setActiveLanguage] = useState('en');
+
   return (
-    <Router>
-      <Navbar />
-      <Suspense fallback={<div className="text-white text-center py-20">Loading business portal...</div>}>
-        <Routes>
-          <Route path="/" element={<CorporateHome />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/admin" element={<Admin />} />
-        </Routes>
-      </Suspense>
-    </Router>
+    <LanguageContext.Provider value={{ activeLanguage, setActiveLanguage }}>
+      <Router>
+        <Navbar />
+        <Suspense fallback={<div className="text-white text-center py-20">Loading business portal...</div>}>
+          <Routes>
+            <Route path="/" element={<CorporateHome />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin" element={<Admin />} />
+          </Routes>
+        </Suspense>
+      </Router>
+    </LanguageContext.Provider>
   );
 }
 

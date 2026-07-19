@@ -1,7 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
-import './config/i18n'; // Initializes the real-time translation engine
 import App from './App.jsx';
 
 // Real-time functional feature: Automated system performance tracking

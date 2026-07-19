@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Search, Menu, X, Globe, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+// Native corporate translation dictionary engineered to bypass external dependencies
+const translationDictionary = {
+  en: { 'nav.about': 'About', 'nav.services': 'Services', 'nav.contact': 'Contact', 'nav.login': 'Portal Access' },
+  hi: { 'nav.about': 'हमारे बारे में', 'nav.services': 'सेवाएं', 'nav.contact': 'संपर्क करें', 'nav.login': 'पोर्टल एक्सेस' },
+  bn: { 'nav.about': 'আমাদের সম্পর্কে', 'nav.services': 'পরিষেবা', 'nav.contact': 'যোগাযোগ', 'nav.login': 'পোর্টাল অ্যাক্সেস' },
+  te: { 'nav.about': 'మా గురించి', 'nav.services': 'సేవలు', 'nav.contact': 'సంప్రదించండి', 'nav.login': 'పోర్టల్ యాక్సెస్' },
+  ta: { 'nav.about': 'எங்களை பற்றி', 'nav.services': 'சேவைகள்', 'nav.contact': 'தொடர்பு கொள்ள', 'nav.login': 'போர்ட்டல் அணுகல்' },
+  mr: { 'nav.about': 'आमच्याबद्दल', 'nav.services': 'सेवा', 'nav.contact': 'संपर्क साधा', 'nav.login': 'पोर्टल ऍक्सेस' },
+  gu: { 'nav.about': 'અમારા વિશે', 'nav.services': 'સેવાઓ', 'nav.contact': 'સંપર્ક કરો', 'nav.login': 'પોર્ટલ ઍક્સેસ' }
+};
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [localTime, setLocalTime] = useState(new Date());
-  const { t, i18n } = useTranslation();
+  const [activeLanguage, setActiveLanguage] = useState('en');
 
   useEffect(() => {
     const timeInterval = setInterval(() => {
@@ -33,9 +43,13 @@ const Navbar = () => {
   ];
 
   const handleLanguageChange = (event) => {
-    if (i18n && i18n.changeLanguage) {
-      i18n.changeLanguage(event.target.value);
-    }
+    setActiveLanguage(event.target.value);
+  };
+
+  // Internal functional logic to process real-time translations
+  const t = (key, fallback) => {
+    const activeDictionary = translationDictionary[activeLanguage] || translationDictionary['en'];
+    return activeDictionary[key] || fallback;
   };
 
   return (
@@ -64,16 +78,16 @@ const Navbar = () => {
           {/* Primary Desktop Navigation */}
           <div className="hidden md:flex space-x-8 items-center">
             <Link to="/about" className="text-white hover:underline uppercase text-sm tracking-wide">
-              {t ? t('nav.about', 'About') : 'About'}
+              {t('nav.about', 'About')}
             </Link>
             <Link to="/services" className="text-white hover:underline uppercase text-sm tracking-wide">
-              {t ? t('nav.services', 'Services') : 'Services'}
+              {t('nav.services', 'Services')}
             </Link>
             <Link to="/contact" className="text-white hover:underline uppercase text-sm tracking-wide">
-              {t ? t('nav.contact', 'Contact') : 'Contact'}
+              {t('nav.contact', 'Contact')}
             </Link>
             <Link to="/login" className="text-white hover:underline uppercase text-sm tracking-wide">
-              {t ? t('nav.login', 'Portal Access') : 'Portal Access'}
+              {t('nav.login', 'Portal Access')}
             </Link>
           </div>
 
@@ -127,9 +141,9 @@ const Navbar = () => {
       {/* Mobile Navigation Panel */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-black border-t border-white px-4 pt-4 pb-8 space-y-4">
-          <Link to="/about" className="block text-white uppercase tracking-wide py-2 border-b border-white">About</Link>
-          <Link to="/services" className="block text-white uppercase tracking-wide py-2 border-b border-white">Services</Link>
-          <Link to="/contact" className="block text-white uppercase tracking-wide py-2 border-b border-white">Contact</Link>
+          <Link to="/about" className="block text-white uppercase tracking-wide py-2 border-b border-white">{t('nav.about', 'About')}</Link>
+          <Link to="/services" className="block text-white uppercase tracking-wide py-2 border-b border-white">{t('nav.services', 'Services')}</Link>
+          <Link to="/contact" className="block text-white uppercase tracking-wide py-2 border-b border-white">{t('nav.contact', 'Contact')}</Link>
           
           <div className="pt-4 flex flex-col space-y-4">
              <div className="flex items-center space-x-2 text-white">
