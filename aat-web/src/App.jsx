@@ -1,24 +1,32 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { Suspense, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './components/layout/Navbar';
+import reactLogo from './assets/react.svg';
+import viteLogo from './assets/vite.svg';
+import heroImg from './assets/hero.png';
 
-function App() {
-  const [count, setCount] = useState(0)
+// Establishing secure, optimized loading pathways for business portals
+const About = React.lazy(() => import('./pages/About/About'));
+const Services = React.lazy(() => import('./pages/Services/Services'));
+const Contact = React.lazy(() => import('./pages/Contact/Contact'));
+const Login = React.lazy(() => import('./pages/Login/Login'));
+const Admin = React.lazy(() => import('./pages/Admin/Admin'));
+
+function CorporateHome() {
+  const [count, setCount] = useState(0);
 
   return (
     <>
       <section id="center">
         <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+          <img src={heroImg} className="base" width="170" height="179" alt="Corporate Hero" />
+          <img src={reactLogo} className="framework" alt="React Architecture" />
+          <img src={viteLogo} className="vite" alt="Vite Engine" />
         </div>
         <div>
-          <h1>Get started</h1>
+          <h1>AnyAstro Techno Solutions</h1>
           <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+            Enterprise digital transformation and scalable performance architecture.
           </p>
         </div>
         <button
@@ -26,7 +34,7 @@ function App() {
           className="counter"
           onClick={() => setCount((count) => count + 1)}
         >
-          Count is {count}
+          Active Client Engagements: {count}
         </button>
       </section>
 
@@ -37,19 +45,19 @@ function App() {
           <svg className="icon" role="presentation" aria-hidden="true">
             <use href="/icons.svg#documentation-icon"></use>
           </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
+          <h2>Corporate Capabilities</h2>
+          <p>Strategic technology solutions</p>
           <ul>
             <li>
-              <a href="https://vite.dev/" target="_blank">
+              <a href="/services" target="_self">
                 <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
+                Explore Engineering Services
               </a>
             </li>
             <li>
-              <a href="https://react.dev/" target="_blank">
+              <a href="/about" target="_self">
                 <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
+                Learn About Our Mission
               </a>
             </li>
           </ul>
@@ -58,55 +66,39 @@ function App() {
           <svg className="icon" role="presentation" aria-hidden="true">
             <use href="/icons.svg#social-icon"></use>
           </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
+          <h2>Connect With Management</h2>
+          <p>Join the AnyAstro enterprise network</p>
           <ul>
             <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
+              <a href="https://github.com" target="_blank" rel="noreferrer">
+                <svg className="button-icon" role="presentation" aria-hidden="true">
                   <use href="/icons.svg#github-icon"></use>
                 </svg>
-                GitHub
+                Corporate GitHub
               </a>
             </li>
             <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
+              <a href="/contact" target="_self">
+                <svg className="button-icon" role="presentation" aria-hidden="true">
                   <use href="/icons.svg#discord-icon"></use>
                 </svg>
-                Discord
+                Client Support Portal
               </a>
             </li>
             <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
+              <a href="https://x.com" target="_blank" rel="noreferrer">
+                <svg className="button-icon" role="presentation" aria-hidden="true">
                   <use href="/icons.svg#x-icon"></use>
                 </svg>
-                X.com
+                Executive Updates
               </a>
             </li>
             <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
+              <a href="/login" target="_self">
+                <svg className="button-icon" role="presentation" aria-hidden="true">
                   <use href="/icons.svg#bluesky-icon"></use>
                 </svg>
-                Bluesky
+                Staff Access
               </a>
             </li>
           </ul>
@@ -116,7 +108,25 @@ function App() {
       <div className="ticks"></div>
       <section id="spacer"></section>
     </>
-  )
+  );
 }
 
-export default App
+function App() {
+  return (
+    <Router>
+      <Navbar />
+      <Suspense fallback={<div className="text-white text-center py-20">Loading business portal...</div>}>
+        <Routes>
+          <Route path="/" element={<CorporateHome />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<Admin />} />
+        </Routes>
+      </Suspense>
+    </Router>
+  );
+}
+
+export default App;
