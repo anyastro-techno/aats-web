@@ -8,4 +8,11 @@ export default defineConfig({
   css: {
     postcss: './postcss.config.js',
   },
+  server: {
+    host: true,
+    strictPort: true,
+    hmr: {
+      clientPort: 443,
+    },
+  },
 });
