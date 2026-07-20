@@ -8,6 +8,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        dyslexic: ['OpenDyslexic', 'Comic Sans MS', 'sans-serif'],
       },
     },
   },
