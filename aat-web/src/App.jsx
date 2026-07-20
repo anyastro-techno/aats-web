@@ -22,6 +22,7 @@ export default function MaintenanceOverlay() {
   const [helpName, setHelpName] = useState('');
   const [helpEmail, setHelpEmail] = useState('');
   const [helpIssue, setHelpIssue] = useState('');
+  const [contactType, setContactType] = useState('General Inquiry');
   const [helpStatus, setHelpStatus] = useState('IDLE');
   const [localCity, setLocalCity] = useState('Mumbai');
 
@@ -68,7 +69,7 @@ export default function MaintenanceOverlay() {
     e.preventDefault();
     setHelpStatus('SUBMITTING');
     try {
-      const text = `*Maintenance Inquiry*\nName: ${helpName}\nEmail: ${helpEmail}\nIssue: ${helpIssue}`;
+      const text = `*Maintenance Inquiry*\nType: ${contactType}\nName: ${helpName}\nEmail: ${helpEmail}\nIssue: ${helpIssue}`;
       const waUrl = `https://wa.me/918329004424?text=${encodeURIComponent(text)}`;
       window.open(waUrl, '_blank');
       
@@ -79,6 +80,7 @@ export default function MaintenanceOverlay() {
         setHelpName('');
         setHelpEmail('');
         setHelpIssue('');
+        setContactType('General Inquiry');
       }, 3000);
     } catch (error) {
       console.error(error);
@@ -350,6 +352,23 @@ export default function MaintenanceOverlay() {
                   <form onSubmit={handleHelpSubmit} className="flex flex-col gap-4">
                     <input type="text" required placeholder="Your Full Name" aria-label="Full Name" value={helpName} onChange={e => setHelpName(e.target.value)} className="w-full bg-[#000000] border border-[#333333] text-white px-4 py-3.5 rounded-xl outline-none focus:border-white transition-colors text-[0.9rem]" />
                     <input type="email" required placeholder="Your Email Address" aria-label="Email" value={helpEmail} onChange={e => setHelpEmail(e.target.value)} className="w-full bg-[#000000] border border-[#333333] text-white px-4 py-3.5 rounded-xl outline-none focus:border-white transition-colors text-[0.9rem]" />
+                    
+                    <select 
+                      value={contactType} 
+                      onChange={e => setContactType(e.target.value)} 
+                      className="w-full bg-[#000000] border border-[#333333] text-white px-4 py-3.5 rounded-xl outline-none focus:border-white transition-colors text-[0.9rem]"
+                    >
+                      <option value="General Inquiry">General Inquiry</option>
+                      <option value="Request quotation">Request quotation</option>
+                      <option value="Request demo">Request demo</option>
+                      <option value="Partnership inquiry">Partnership inquiry</option>
+                      <option value="Career inquiry">Career inquiry</option>
+                      <option value="Vendor inquiry">Vendor inquiry</option>
+                      <option value="Investor inquiry">Investor inquiry</option>
+                      <option value="Press inquiry">Press inquiry</option>
+                      <option value="Media contact">Media contact</option>
+                    </select>
+
                     <textarea required placeholder="Describe your issue or question..." aria-label="Message" value={helpIssue} onChange={e => setHelpIssue(e.target.value)} rows="4" className="w-full bg-[#000000] border border-[#333333] text-white px-4 py-3.5 rounded-xl outline-none focus:border-white transition-colors text-[0.9rem] resize-none"></textarea>
                     
                     <button disabled={helpStatus === 'SUBMITTING'} type="submit" className="w-full bg-white text-black py-3.5 rounded-xl font-black mt-2 hover:bg-[#e0e0e0] transition-colors disabled:opacity-50">
@@ -482,7 +501,7 @@ export default function MaintenanceOverlay() {
              </div>
           </div>
         </motion.div>
-
+              
         {/* SECTION 5: INLINE CONTACT FORM */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
