@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Menu, X, Globe, ChevronDown, 
+  Menu, X, Globe, ChevronDown, ChevronUp, 
   MapPin, Search, Calendar, Clock, CreditCard
 } from 'lucide-react';
 
@@ -35,6 +35,14 @@ const IconX = ({ size = 22, className = "" }) => (
   </svg>
 );
 
+// Custom 2-line Menu SVG
+const IconTwoLineMenu = ({ size = 24, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <line x1="3" y1="10" x2="21" y2="10"></line>
+    <line x1="3" y1="15" x2="21" y2="15"></line>
+  </svg>
+);
+
 const PRODUCTS = [
   { id: 1, name: 'AtlasGrid', desc: 'Deploy enterprise GIS mapping anywhere with AnyAstro. Request a node, integrate, and go.', img: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=400' },
   { id: 2, name: 'GeoPulse', desc: 'Real-time topography analytics makes mapping items easier than ever.', img: 'https://images.unsplash.com/photo-1618761714954-0b8cd0026356?auto=format&fit=crop&q=80&w=400' },
@@ -50,6 +58,14 @@ const NAV_LINKS = [
   { name: 'About', hasDropdown: true },
 ];
 
+// AnyAstro Context Dropdown Content
+const DROPDOWN_CONTENT = {
+  'Products': ['AtlasGrid', 'GeoPulse', 'SecureStack', 'AutoPilot AI', 'FactoryOS'],
+  'Solutions': ['Enterprise Architecture', 'Edge Computing', 'Cloud Native', 'Zero-Trust Networks'],
+  'Company': ['About us', 'Our offerings', 'Newsroom', 'Investors', 'Blog', 'Careers'],
+  'About': ['About us', 'Our offerings', 'Newsroom', 'Investors', 'Blog', 'Careers']
+};
+
 const FOOTER_LINKS = {
   Company: ['About us', 'Our offerings', 'Newsroom', 'Investors', 'Blog', 'Careers'],
   Products: ['AtlasGrid', 'GeoPulse', 'SecureStack', 'AutoPilot AI', 'FactoryOS'],
@@ -59,20 +75,17 @@ const FOOTER_LINKS = {
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+
+  const toggleDropdown = (name) => {
+    setActiveDropdown(activeDropdown === name ? null : name);
+  };
 
   return (
     <>
       {/* Desktop & Mobile Header */}
       <header className="bg-black text-white h-16 flex items-center justify-between px-4 md:px-12 fixed top-0 w-full z-50">
-        <div className="flex items-center">
-          {/* Mobile Menu Toggle */}
-          <button 
-            className="lg:hidden mr-4"
-            onClick={() => setIsMobileMenuOpen(true)}
-          >
-            <Menu size={24} />
-          </button>
-          
+        <div className="flex items-center h-full">
           {/* Strictly Image Logo */}
           <a href="#" className="mr-8 flex items-center">
              <img 
@@ -83,32 +96,71 @@ const Navbar = () => {
           </a>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-6">
+          <nav className="hidden lg:flex items-center gap-6 h-full">
             {NAV_LINKS.map((link) => (
-              <button 
-                key={link.name} 
-                className="flex items-center text-sm font-medium hover:text-gray-300 transition-colors py-2"
-              >
-                {link.name}
-                {link.hasDropdown && <ChevronDown size={16} className="ml-1" />}
-              </button>
+              <div key={link.name} className="relative h-full flex items-center">
+                <button 
+                  onClick={() => link.hasDropdown ? toggleDropdown(link.name) : null}
+                  className="flex items-center text-sm font-medium hover:text-gray-300 transition-colors py-2"
+                >
+                  {link.name}
+                  {link.hasDropdown && (
+                    activeDropdown === link.name ? (
+                      <ChevronUp size={16} className="ml-1" />
+                    ) : (
+                      <ChevronDown size={16} className="ml-1" />
+                    )
+                  )}
+                </button>
+                
+                {/* Desktop Dropdown Box */}
+                {link.hasDropdown && activeDropdown === link.name && (
+                  <div className="absolute top-full left-0 min-w-[240px] bg-white border-2 border-[#276ef1] shadow-xl py-2 flex flex-col z-50">
+                    {DROPDOWN_CONTENT[link.name]?.map((item, idx) => (
+                      <a 
+                        key={idx} 
+                        href="#" 
+                        className="px-4 py-2.5 text-[15px] text-gray-500 hover:bg-gray-100 hover:text-black transition-colors text-left"
+                      >
+                        {item}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </nav>
         </div>
 
         {/* Right Side Actions */}
-        <div className="flex items-center gap-4">
-          <button className="hidden md:flex items-center text-sm font-medium hover:text-gray-300 transition-colors">
+        <div className="flex items-center gap-4 md:gap-5">
+          <button className="hidden lg:flex items-center text-sm font-medium hover:text-gray-300 transition-colors">
             <Globe size={16} className="mr-1" /> EN
           </button>
-          <button className="hidden md:block text-sm font-medium hover:text-gray-300 transition-colors">
+          <button className="hidden lg:block text-sm font-medium hover:text-gray-300 transition-colors">
             Help
           </button>
-          <button className="hidden md:block text-sm font-medium hover:text-gray-300 transition-colors">
+          <button className="hidden lg:block text-sm font-medium hover:text-gray-300 transition-colors">
             Log in
           </button>
-          <button className="bg-white text-black px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
-            Contact us
+          <button className="hidden lg:block bg-white text-black px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+            Sign up
+          </button>
+          
+          {/* Mobile Specific Actions */}
+          <button className="lg:hidden text-sm font-medium hover:text-gray-300 transition-colors">
+            Log in
+          </button>
+          <button className="lg:hidden bg-white text-black px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+            Sign up
+          </button>
+          
+          {/* Mobile Menu Toggle */}
+          <button 
+            className="lg:hidden flex items-center justify-center ml-1"
+            onClick={() => setIsMobileMenuOpen(true)}
+          >
+            <IconTwoLineMenu size={24} />
           </button>
         </div>
       </header>
@@ -131,7 +183,7 @@ const Navbar = () => {
               />
               <div className="flex items-center gap-4">
                  <button className="bg-white text-black px-4 py-1.5 rounded-full text-sm font-medium">
-                  Contact
+                  Sign up
                 </button>
                 <button onClick={() => setIsMobileMenuOpen(false)}>
                   <X size={24} />
