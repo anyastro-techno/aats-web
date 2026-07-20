@@ -8,6 +8,7 @@ import { t, languageOptions } from '../utils/translations';
 import MaintenanceHeader from '../components/MaintenanceHeader';
 import MaintenanceFooter from '../components/MaintenanceFooter';
 import { OnboardingModal, DeveloperModal, LanguageModal, HelpCenterModal } from '../components/MaintenanceModals';
+import AccessibilityWidget from '../components/AccessibilityWidget';
 
 export default function MaintenanceOverlay() {
   const [lang, setLang] = useState('en');
@@ -117,6 +118,9 @@ export default function MaintenanceOverlay() {
       <DeveloperModal showDeveloper={showDeveloper} setShowDeveloper={setShowDeveloper} currentT={currentT} />
       <LanguageModal showLangPrompt={showLangPrompt} setShowLangPrompt={setShowLangPrompt} languageOptions={languageOptions} lang={lang} setLang={setLang} />
       <HelpCenterModal showHelpCenter={showHelpCenter} setShowHelpCenter={setShowHelpCenter} currentT={currentT} helpStatus={helpStatus} helpName={helpName} setHelpName={setHelpName} helpEmail={helpEmail} setHelpEmail={setHelpEmail} helpIssue={helpIssue} setHelpIssue={setHelpIssue} handleHelpSubmit={handleHelpSubmit} />
+
+      {/* ACCESSIBILITY WIDGET */}
+      <AccessibilityWidget />
 
       {/* HEADER */}
       <MaintenanceHeader currentT={currentT} setShowHelpCenter={setShowHelpCenter} setShowLangPrompt={setShowLangPrompt} navigate={navigate} />
