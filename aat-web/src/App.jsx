@@ -78,7 +78,7 @@ const Navbar = () => {
              <img 
               src="/assets/branding/logo.png" 
               alt="AnyAstro Logo" 
-              className="h-6 object-contain"
+              className="h-20 object-contain"
             />
           </a>
 
@@ -127,7 +127,7 @@ const Navbar = () => {
                <img 
                 src="/assets/branding/logo.png" 
                 alt="AnyAstro Logo" 
-                className="h-6 object-contain"
+                className="h-20 object-contain"
               />
               <div className="flex items-center gap-4">
                  <button className="bg-white text-black px-4 py-1.5 rounded-full text-sm font-medium">
@@ -380,7 +380,7 @@ const Footer = () => {
            <img 
               src="/assets/branding/logo.png" 
               alt="AnyAstro Logo" 
-              className="h-8 object-contain"
+              className="h-20 object-contain"
             />
           <div className="flex flex-col md:items-end gap-2 text-sm">
             <a href="#" className="hover:underline">Do not sell or share my personal information</a>
