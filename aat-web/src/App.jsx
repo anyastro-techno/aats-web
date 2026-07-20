@@ -2,9 +2,38 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Menu, X, Globe, ChevronDown, 
-  MapPin, Search, Calendar, Clock, CreditCard,
-  Linkedin, Youtube, Instagram, Twitter
+  MapPin, Search, Calendar, Clock, CreditCard
 } from 'lucide-react';
+
+// Custom SVG Icons to replace removed Lucide brand icons
+const IconLinkedIn = ({ size = 22, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+    <rect width="4" height="12" x="2" y="9"></rect>
+    <circle cx="4" cy="4" r="2"></circle>
+  </svg>
+);
+
+const IconYouTube = ({ size = 22, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M2.5 7.1C2.5 7.1 2.3 5.4 3.1 4.6C4 3.6 5.2 3.6 5.8 3.5C9.2 3.3 12 3.3 12 3.3C12 3.3 14.8 3.3 18.2 3.5C18.8 3.6 20 3.6 20.9 4.6C21.7 5.4 21.5 7.1 21.5 7.1C21.7 8.7 21.8 10.4 21.8 12C21.8 13.6 21.7 15.3 21.5 16.9C21.5 16.9 21.7 18.6 20.9 19.4C20 20.4 18.6 20.4 18 20.5C14.9 20.8 12 20.7 12 20.7C12 20.7 9.2 20.7 5.8 20.5C5.2 20.4 4 20.4 3.1 19.4C2.3 18.6 2.5 16.9 2.5 16.9C2.3 15.3 2.2 13.6 2.2 12C2.2 10.4 2.3 8.7 2.5 7.1ZM9.8 15.3L15.8 12L9.8 8.7V15.3Z"></path>
+  </svg>
+);
+
+const IconInstagram = ({ size = 22, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
+  </svg>
+);
+
+const IconX = ({ size = 22, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+    <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+  </svg>
+);
 
 const PRODUCTS = [
   { id: 1, name: 'AtlasGrid', desc: 'Deploy enterprise GIS mapping anywhere with AnyAstro. Request a node, integrate, and go.', img: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=400' },
@@ -385,10 +414,10 @@ const Footer = () => {
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 pt-8 border-t border-gray-800">
           
           <div className="flex items-center gap-6">
-            <a href="#" className="text-white hover:text-gray-400 transition-colors"><Linkedin size={22} /></a>
-            <a href="#" className="text-white hover:text-gray-400 transition-colors"><Youtube size={22} /></a>
-            <a href="#" className="text-white hover:text-gray-400 transition-colors"><Instagram size={22} /></a>
-            <a href="#" className="text-white hover:text-gray-400 transition-colors"><Twitter size={22} /></a>
+            <a href="#" className="text-white hover:text-gray-400 transition-colors"><IconLinkedIn /></a>
+            <a href="#" className="text-white hover:text-gray-400 transition-colors"><IconYouTube /></a>
+            <a href="#" className="text-white hover:text-gray-400 transition-colors"><IconInstagram /></a>
+            <a href="#" className="text-white hover:text-gray-400 transition-colors"><IconX /></a>
           </div>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8">
