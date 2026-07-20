@@ -66,7 +66,7 @@ export default function MaintenanceOverlay() {
 
   const t = {
     en: {
-      help: "Help Center", lang: "English", back: "contact", careers: "Careers",
+      help: "Help Center", lang: "English", back: "Contact", careers: "Careers",
       main_title: "System Update in Progress.",
       main_sub: "We are currently updating our systems to serve you better. We will be back online shortly.",
       val1_title: "Better Security", val1_sub: "Keeping your infrastructure and data safe.",
