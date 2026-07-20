@@ -66,7 +66,7 @@ export default function MaintenanceOverlay() {
 
   const t = {
     en: {
-      help: "Help Center", lang: "English", back: "Back to Home", careers: "Careers",
+      help: "Help Center", lang: "English", back: "contact", careers: "Careers",
       main_title: "System Update in Progress.",
       main_sub: "We are currently updating our systems to serve you better. We will be back online shortly.",
       val1_title: "Better Security", val1_sub: "Keeping your infrastructure and data safe.",
@@ -75,7 +75,7 @@ export default function MaintenanceOverlay() {
       val4_title: "Smoother Integration", val4_sub: "Making the platform run faster and without interruptions."
     },
     hi: {
-      help: "सहायता केंद्र", lang: "हिन्दी", back: "वापस जाएं", careers: "करियर",
+      help: "सहायता केंद्र", lang: "हिन्दी", back: "संपर्क", careers: "करियर",
       main_title: "सिस्टम अपडेट चल रहा है।",
       main_sub: "हम आपको बेहतर सेवा देने के लिए अपने सिस्टम को अपडेट कर रहे हैं। हम जल्द ही वापस आएंगे।",
       val1_title: "बेहतर सुरक्षा", val1_sub: "आपके इन्फ्रास्ट्रक्चर और डेटा को सुरक्षित रखना।",
@@ -107,7 +107,7 @@ export default function MaintenanceOverlay() {
       {/* TOP HEADER */}
       <header className="w-full flex items-center justify-between px-8 md:px-16 py-8 animate-fade relative z-50">
         <div className="flex items-center gap-2">
-          <img src="/logo.png" alt="AnyAstro" className="h-8 w-auto" onError={(e) => e.target.style.display = 'none'} />
+          <img src="/assets/branding/logo.png" alt="AnyAstro" className="h-8 w-auto" onError={(e) => e.target.style.display = 'none'} />
           <span className="font-black text-[1.5rem] tracking-tighter ml-[-5px]"></span>
         </div>
         
