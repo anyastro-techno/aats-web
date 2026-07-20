@@ -1,325 +1,431 @@
-import React, { useState, useEffect, Suspense, createContext, useContext } from 'react';
-import { BrowserRouter, Routes, Route, useLocation, Navigate, Link } from 'react-router-dom';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { WifiOff, AlertCircle } from 'lucide-react';
+import { 
+  Menu, X, Globe, ChevronDown, 
+  MapPin, Search, Calendar, Clock, CreditCard,
+  Linkedin, Youtube, Instagram, Twitter
+} from 'lucide-react';
 
-/**
- * ============================================================================
- * MODULE: MASTER ROUTER ARCHITECTURE
- * Features: 
- * 1. Global Scroll Restoration
- * 2. Real-Time Network Connection Monitor
- * 3. System Theme Sync Observer & Manual Override
- * 4. Route-based Document Title Updater
- * 5. Global Error Boundary (Pure Black Minimalist UI)
- * 6. Framer Motion Page Transitions
- * 7. Live Viewport Meta Management
- * 8. ANYASTRO TECHNO SOLUTIONS IMPORTS ONLY
- * 9. GLOBAL THEME & LOCALIZATION WIDGET (14 Languages)
- * 10. STRICT COMING SOON MAIN PAGE WITH DYNAMIC LOGOS
- * ============================================================================
- */
+const PRODUCTS = [
+  { id: 1, name: 'AtlasGrid', desc: 'Deploy enterprise GIS mapping anywhere with AnyAstro. Request a node, integrate, and go.', img: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=400' },
+  { id: 2, name: 'GeoPulse', desc: 'Real-time topography analytics makes mapping items easier than ever.', img: 'https://images.unsplash.com/photo-1618761714954-0b8cd0026356?auto=format&fit=crop&q=80&w=400' },
+  { id: 3, name: 'SecureStack', desc: 'Reserve a zero-trust gateway up to 90 days in advance so your network is secure.', img: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=400' },
+  { id: 4, name: 'AutoPilot AI', desc: 'Get autonomous ML edge pipelines for your facility. Learn more about Edge.', img: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&q=80&w=400' },
+];
 
-// --- ANYASTRO TECHNO SOLUTIONS IMPORTS ---
-import Navbar from './components/layout/Navbar';
-const Footer = React.lazy(() => import('./components/layout/Footer'));
+const NAV_LINKS = [
+  { name: 'Products', hasDropdown: true },
+  { name: 'Solutions', hasDropdown: true },
+  { name: 'Industries', hasDropdown: false },
+  { name: 'Company', hasDropdown: true },
+  { name: 'About', hasDropdown: true },
+];
 
-// Business Modules
-const Hero = React.lazy(() => import('./components/sections/Hero'));
-const Partners = React.lazy(() => import('./components/sections/Partners'));
-const Testimonial = React.lazy(() => import('./components/sections/Testimonial'));
-const TechStack = React.lazy(() => import('./components/sections/TechStack'));
-const Works = React.lazy(() => import('./components/sections/Works'));
-const ContactForm = React.lazy(() => import('./components/sections/ContactForm'));
-
-// Core Portals
-const About = React.lazy(() => import('./pages/About/About'));
-const Services = React.lazy(() => import('./pages/Services/Services'));
-const Contact = React.lazy(() => import('./pages/Contact/Contact'));
-const Login = React.lazy(() => import('./pages/Login/Login'));
-const Admin = React.lazy(() => import('./pages/Admin/Admin'));
-
-// ============================================================================
-// ENTERPRISE CONTEXT & LOCALIZATION DICTIONARY
-// ============================================================================
-export const EnterpriseContext = createContext();
-
-const enterpriseDictionary = {
-  en: { soon: "Coming Soon", desc: "Enterprise Digital Transformation & Scalable Architecture", maintenance: "Core systems are currently undergoing scheduled upgrades prior to launch." },
-  hi: { soon: "जल्द आ रहा है", desc: "एंटरप्राइज डिजिटल ट्रांसफॉर्मेशन और स्केलेबल आर्किटेक्चर", maintenance: "लॉन्च से पहले कोर सिस्टम वर्तमान में निर्धारित अपग्रेड से गुजर रहे हैं।" },
-  bn: { soon: "শীঘ্রই আসছে", desc: "এন্টারপ্রাইজ ডিজিটাল ট্রান্সফরমেশন এবং স্কেলেবল আর্কিটেকচার", maintenance: "লঞ্চের আগে মূল সিস্টেমগুলি বর্তমানে আপগ্রেড করা হচ্ছে।" },
-  te: { soon: "త్వరలో వస్తుంది", desc: "ఎంటర్‌ప్రైజ్ డిజిటల్ ట్రాన్స్‌ఫర్మేషన్ & స్కేలబుల్ ఆర్కిటెక్చర్", maintenance: "ప్రారంభానికి ముందు కోర్ సిస్టమ్‌లు ప్రస్తుతం అప్‌గ్రేడ్ అవుతున్నాయి." },
-  ta: { soon: "விரைவில் வருகிறது", desc: "நிறுவன டிஜிட்டல் மாற்றம் மற்றும் அளவிடக்கூடிய கட்டமைப்பு", maintenance: "அறிமுகத்திற்கு முன் முக்கிய அமைப்புகள் தற்போது மேம்படுத்தப்பட்டு வருகின்றன." },
-  mr: { soon: "लवकरच येत आहे", desc: "एंटरप्राइझ डिजिटल ट्रान्सफॉर्मेशन आणि स्केलेबल आर्किटेक्चर", maintenance: "लाँच होण्यापूर्वी कोर सिस्टममध्ये सध्या नियोजित अपग्रेड सुरू आहेत." },
-  gu: { soon: "ટૂંક સમયમાં આવી રહ્યું છે", desc: "એન્ટરપ્રાઇઝ ડિજિટલ ટ્રાન્સફોર્મેશન અને સ્કેલેબલ આર્કિટેક્ચર", maintenance: "લૉન્ચ પહેલાં કોર સિસ્ટમ્સમાં હાલમાં અપગ્રેડ ચાલી રહ્યા છે." },
-  kn: { soon: "ಶೀಘ್ರದಲ್ಲೇ ಬರಲಿದೆ", desc: "ಎಂಟರ್ಪ್ರೈಸ್ ಡಿಜಿಟಲ್ ಟ್ರಾನ್ಸ್ಫಾರ್ಮೇಶನ್ ಮತ್ತು ಸ್ಕೇಲೆಬಲ್ ಆರ್ಕಿಟೆಕ್ಚರ್", maintenance: "ಉಡಾವಣೆಯ ಮೊದಲು ಕೋರ್ ಸಿಸ್ಟಂಗಳು ಪ್ರಸ್ತುತ ಅಪ್‌ಗ್ರೇಡ್‌ಗೆ ಒಳಗಾಗುತ್ತಿವೆ." },
-  or: { soon: "ଖୁବ୍ ଶୀଘ୍ର ଆସୁଛି", desc: "ଏଣ୍ଟରପ୍ରାଇଜ୍ ଡିଜିଟାଲ୍ ଟ୍ରାନ୍ସଫର୍ମେସନ୍ ଏବଂ ସ୍କେଲେବଲ୍ ଆର୍କିଟେକ୍ଚର୍", maintenance: "ଲଞ୍ଚ ପୂର୍ବରୁ କୋର୍ ସିଷ୍ଟମ୍ ବର୍ତ୍ତମାନ ଅପଗ୍ରେଡ୍ ଦେଇ ଗତି କରୁଛି |" },
-  ml: { soon: "ഉടൻ വരുന്നു", desc: "എന്റർപ്രൈസ് ഡിജിറ്റൽ ട്രാൻസ്ഫോർമേഷൻ & സ്കേലബിൾ ആർക്കിടെക്ചർ", maintenance: "ലോഞ്ചിന് മുന്നോടിയായി കോർ സിസ്റ്റങ്ങൾ നവീകരണത്തിന് വിധേയമായിക്കൊണ്ടിരിക്കുകയാണ്." },
-  pa: { soon: "ਜਲਦੀ ਆ ਰਿਹਾ ਹੈ", desc: "ਐਂਟਰਪ੍ਰਾਈਜ਼ ਡਿਜੀਟਲ ਟ੍ਰਾਂਸਫਾਰਮੇਸ਼ਨ ਅਤੇ ਸਕੇਲੇਬਲ ਆਰਕੀਟੈਕਚਰ", maintenance: "ਲਾਂਚ ਤੋਂ ਪਹਿਲਾਂ ਕੋਰ ਸਿਸਟਮ ਵਰਤਮਾਨ ਵਿੱਚ ਅੱਪਗਰੇਡਾਂ ਵਿੱਚੋਂ ਗੁਜ਼ਰ ਰਹੇ ਹਨ।" },
-  as: { soon: "অতি সোনকালে আহি আছে", desc: "এণ্টাৰপ্ৰাইজ ডিজিটেল ট্ৰেন্সফৰমেচন আৰু স্কেলেবল আৰ্কিটেকচাৰ", maintenance: "লঞ্চৰ আগতে বৰ্তমান মূল চিষ্টেমসমূহৰ আপগ্ৰেড চলি আছে।" },
-  ur: { soon: "جلد آرہا ہے", desc: "انٹرپرائز ڈیجیٹل ٹرانسفارمیشن اور اسکیل ایبل آرکیٹیکچر", maintenance: "لانچ سے پہلے بنیادی سسٹمز فی الحال اپ گریڈ سے گزر رہے ہیں۔" },
-  mai: { soon: "जल्द आबि रहल अछि", desc: "एंटरप्राइज डिजिटल ट्रांसफॉर्मेशन आ स्केलेबल आर्किटेक्चर", maintenance: "लॉन्च सं पहिने कोर सिस्टम वर्तमान में अपग्रेड सं गुजरि रहल अछि।" }
+const FOOTER_LINKS = {
+  Company: ['About us', 'Our offerings', 'Newsroom', 'Investors', 'Blog', 'Careers'],
+  Products: ['AtlasGrid', 'GeoPulse', 'SecureStack', 'AutoPilot AI', 'FactoryOS'],
+  Citizenship: ['Safety', 'Sustainability', 'Diversity'],
+  Deployments: ['Reserve', 'Data Centers', 'Cities']
 };
 
-// ============================================================================
-// GLOBAL FEATURE COMPONENTS & HOOKS
-// ============================================================================
-
-const RouteController = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    
-    const path = location.pathname === '/' ? 'Standby' : location.pathname.substring(1);
-    const formattedTitle = path.charAt(0).toUpperCase() + path.slice(1);
-    document.title = `AnyAstro Techno Solutions | ${formattedTitle.replace('-', ' ')}`;
-  }, [location.pathname]);
-
-  return null;
-};
-
-const NetworkMonitor = () => {
-  const [isOffline, setIsOffline] = useState(typeof navigator !== 'undefined' ? !navigator.onLine : false);
-
-  useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
+const Navbar = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <AnimatePresence>
-      {isOffline && (
-        <motion.div 
-          initial={{ y: -100, opacity: 0 }} 
-          animate={{ y: 0, opacity: 1 }} 
-          exit={{ y: -100, opacity: 0 }}
-          className="fixed top-0 left-0 right-0 z-[9999] bg-[#000000] text-white py-4 px-6 flex items-center justify-center gap-4 font-sans font-bold text-[0.85rem] border-b border-[#333333]"
-        >
-          <div className="w-6 h-6 rounded-full bg-white text-black flex items-center justify-center animate-pulse">
-            <WifiOff size={14} strokeWidth={3} /> 
-          </div>
-          No internet connection. Displaying offline view.
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-};
+    <>
+      {/* Desktop & Mobile Header */}
+      <header className="bg-black text-white h-16 flex items-center justify-between px-4 md:px-12 fixed top-0 w-full z-50">
+        <div className="flex items-center">
+          {/* Mobile Menu Toggle */}
+          <button 
+            className="lg:hidden mr-4"
+            onClick={() => setIsMobileMenuOpen(true)}
+          >
+            <Menu size={24} />
+          </button>
+          
+          {/* Strictly Image Logo */}
+          <a href="#" className="mr-8 flex items-center">
+             <img 
+              src="https://placehold.co/120x40/000000/ffffff?text=AnyAstro&font=montserrat" 
+              alt="AnyAstro Logo" 
+              className="h-6 object-contain"
+            />
+          </a>
 
-const SystemObservers = () => {
-  useEffect(() => {
-    const setVh = () => {
-      let vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
-    };
-    setVh();
-    window.addEventListener('resize', setVh);
-    return () => window.removeEventListener('resize', setVh);
-  }, []);
-  return null;
-};
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-6">
+            {NAV_LINKS.map((link) => (
+              <button 
+                key={link.name} 
+                className="flex items-center text-sm font-medium hover:text-gray-300 transition-colors py-2"
+              >
+                {link.name}
+                {link.hasDropdown && <ChevronDown size={16} className="ml-1" />}
+              </button>
+            ))}
+          </nav>
+        </div>
 
-class GlobalErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
-  componentDidCatch(error, errorInfo) {
-    console.error("Application Error:", error, errorInfo);
-  }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen bg-[#000000] text-white flex flex-col items-center justify-center p-6 text-center">
-          <div className="w-16 h-16 bg-[#111111] border border-[#333333] rounded-full flex items-center justify-center mx-auto mb-8">
-            <AlertCircle size={28} className="text-white" />
-          </div>
-          <h1 className="text-[2.5rem] font-black tracking-tighter mb-4 text-white">System Error.</h1>
-          <p className="text-[#888888] font-sans text-[0.95rem] mb-10 max-w-md mx-auto">
-            An unexpected application error has occurred. Our engineers have been notified.
-          </p>
-          <button onClick={() => window.location.reload()} className="bg-white text-black px-8 py-3 rounded-full font-bold text-[0.95rem] hover:bg-[#e0e0e0] transition-colors">
-            Restart Session
+        {/* Right Side Actions */}
+        <div className="flex items-center gap-4">
+          <button className="hidden md:flex items-center text-sm font-medium hover:text-gray-300 transition-colors">
+            <Globe size={16} className="mr-1" /> EN
+          </button>
+          <button className="hidden md:block text-sm font-medium hover:text-gray-300 transition-colors">
+            Help
+          </button>
+          <button className="hidden md:block text-sm font-medium hover:text-gray-300 transition-colors">
+            Log in
+          </button>
+          <button className="bg-white text-black px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
+            Contact us
           </button>
         </div>
-      );
-    }
-    return this.props.children;
-  }
-}
+      </header>
 
-const AnimatedRoute = ({ children }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="w-full min-h-screen flex flex-col"
-    >
-      {children}
-    </motion.div>
+      {/* Mobile Full Screen Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, x: '-100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '-100%' }}
+            transition={{ type: 'tween', duration: 0.3 }}
+            className="fixed inset-0 bg-white z-[60] flex flex-col overflow-y-auto"
+          >
+            <div className="bg-black text-white h-16 flex items-center justify-between px-4 sticky top-0">
+               <img 
+                src="https://placehold.co/120x40/000000/ffffff?text=AnyAstro&font=montserrat" 
+                alt="AnyAstro Logo" 
+                className="h-6 object-contain"
+              />
+              <div className="flex items-center gap-4">
+                 <button className="bg-white text-black px-4 py-1.5 rounded-full text-sm font-medium">
+                  Contact
+                </button>
+                <button onClick={() => setIsMobileMenuOpen(false)}>
+                  <X size={24} />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 flex flex-col gap-6">
+              {NAV_LINKS.map((link) => (
+                <button key={link.name} className="flex items-center justify-between text-3xl font-bold text-black border-b border-transparent">
+                  {link.name}
+                  {link.hasDropdown && <ChevronDown size={24} />}
+                </button>
+              ))}
+              <div className="mt-8">
+                <button className="flex items-center text-lg font-bold text-black mb-4">
+                  Help
+                </button>
+                <button className="flex items-center text-base font-medium text-black">
+                  <Globe size={20} className="mr-2" /> EN
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
-// ============================================================================
-// GLOBAL OPERATIONS CONTROL WIDGET (Theme & Localization)
-// ============================================================================
-const GlobalOperationsWidget = () => {
-  const { activeLanguage, setActiveLanguage, theme, toggleTheme } = useContext(EnterpriseContext);
-
-  const languageOptions = [
-    { code: 'en', label: 'English' }, { code: 'hi', label: 'हिंदी' },
-    { code: 'bn', label: 'বাংলা' }, { code: 'te', label: 'తెలుగు' },
-    { code: 'ta', label: 'தமிழ்' }, { code: 'mr', label: 'मराठी' },
-    { code: 'gu', label: 'ગુજરાતી' }, { code: 'kn', label: 'ಕನ್ನಡ' },
-    { code: 'or', label: 'ଓଡ଼ିଆ' }, { code: 'ml', label: 'മലയാളം' },
-    { code: 'pa', label: 'ਪੰਜਾਬੀ' }, { code: 'as', label: 'অসমীয়া' },
-    { code: 'ur', label: 'اردو' }, { code: 'mai', label: 'मैथिली' }
-  ];
-
+const Hero = () => {
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] flex items-center shadow-2xl bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 transition-colors duration-300 rounded-sm">
-      <button 
-        onClick={toggleTheme}
-        className="px-4 py-3 text-xs md:text-sm font-bold uppercase tracking-widest text-black dark:text-white border-r border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-      >
-        {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-      </button>
-      <select 
-        value={activeLanguage}
-        onChange={(e) => setActiveLanguage(e.target.value)}
-        className="px-4 py-3 text-xs md:text-sm font-bold bg-transparent text-black dark:text-white outline-none cursor-pointer uppercase tracking-widest appearance-none"
-      >
-        {languageOptions.map(lang => (
-          <option key={lang.code} value={lang.code} className="text-black bg-white">{lang.label}</option>
-        ))}
-      </select>
-    </div>
-  );
-};
-
-// ============================================================================
-// PRIMARY ENTRY PORTAL: Coming Soon Landing Page
-// ============================================================================
-const ComingSoonLanding = () => {
-  const { activeLanguage, theme } = useContext(EnterpriseContext);
-  const t = enterpriseDictionary[activeLanguage] || enterpriseDictionary['en'];
-  
-  // Real logic: Strictly swapping corporate branding assets based on the active theme
-  const currentLogo = theme === 'dark' ? '/assets/branding/logo2.png' : '/assets/branding/logo.png';
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#fcfcfc] dark:bg-[#000000] text-black dark:text-white transition-colors duration-300 relative overflow-hidden">
-      
-      {/* Background Ambient Mesh */}
-      <div className="corporate-gradient-mesh opacity-40 dark:opacity-20 absolute inset-0 transition-opacity duration-300 pointer-events-none"></div>
-
-      <div className="max-w-3xl px-6 text-center relative z-10">
-        <img 
-          src={currentLogo} 
-          alt="AnyAstro Techno Solutions" 
-          className="h-16 w-auto mx-auto mb-12 transition-opacity duration-300"
-          onError={(e) => {
-            e.target.style.display = 'none';
-          }}
-        />
-        <div className="w-16 h-16 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin mx-auto mb-10"></div>
-        <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tight uppercase">{t.soon}</h1>
-        <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-6 font-medium">{t.desc}</p>
-        <p className="text-sm text-gray-500 dark:text-gray-500 uppercase tracking-widest">{t.maintenance}</p>
+    <section className="pt-24 pb-16 px-4 md:px-12 md:pt-32 max-w-[1400px] mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
         
-        {/* Hidden Gateway to internal corporate infrastructure */}
-        <div className="mt-16">
-          <Link to="/home" className="text-xs uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white transition-colors">
-            Developer Access
-          </Link>
+        {/* Left Column: Text & Form */}
+        <div className="flex flex-col max-w-xl">
+          <div className="flex items-center gap-2 mb-6 text-sm font-medium text-black">
+            <MapPin size={16} fill="black" /> United States, HQ <span className="underline cursor-pointer">Change region</span>
+          </div>
+          
+          <h1 className="text-5xl md:text-[64px] leading-[1.1] font-bold tracking-tight text-black mb-8">
+            Deploy infrastructure anywhere with AnyAstro
+          </h1>
+
+          <div className="bg-white rounded-2xl w-full">
+            <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 w-fit mb-6">
+               <Clock size={16} className="text-black" />
+               <span className="text-sm font-medium">Deploy now</span>
+               <ChevronDown size={16} />
+            </div>
+
+            <div className="relative flex flex-col gap-3">
+              {/* Vertical connecting line */}
+              <div className="absolute left-[23px] top-[24px] bottom-[24px] w-[2px] bg-black z-0"></div>
+
+              {/* Input 1 */}
+              <div className="relative z-10 flex items-center bg-[#F6F6F6] rounded-lg p-3">
+                <div className="w-6 flex justify-center mr-3">
+                   <div className="w-2.5 h-2.5 rounded-full bg-black"></div>
+                </div>
+                <input 
+                  type="text" 
+                  placeholder="Select Industry" 
+                  className="bg-transparent border-none outline-none w-full text-base placeholder-gray-500"
+                />
+                <Search size={20} className="text-black ml-2" />
+              </div>
+
+              {/* Input 2 */}
+              <div className="relative z-10 flex items-center bg-[#F6F6F6] rounded-lg p-3">
+                <div className="w-6 flex justify-center mr-3">
+                   <div className="w-2.5 h-2.5 bg-black"></div>
+                </div>
+                <input 
+                  type="text" 
+                  placeholder="Project Scope" 
+                  className="bg-transparent border-none outline-none w-full text-base placeholder-gray-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 mt-6">
+              <button className="bg-black text-white px-6 py-3.5 rounded-lg text-base font-medium hover:bg-gray-800 transition-colors">
+                See solutions
+              </button>
+              <button className="text-base font-medium text-black underline underline-offset-4 hover:text-gray-600 transition-colors">
+                Log in to see your recent deployments
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Illustration/Image */}
+        <div className="relative w-full aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden shadow-sm">
+          <img 
+            src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1200" 
+            alt="Infrastructure Illustration" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-md rounded-xl p-4 flex items-center justify-between shadow-lg">
+            <span className="font-medium text-black text-lg">Ready to build?</span>
+            <button className="bg-white text-black border border-gray-200 px-4 py-2 rounded-full text-sm font-medium shadow-sm hover:bg-gray-50 transition-colors">
+              Schedule consult
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  );
+};
+
+const ExploreServices = () => {
+  return (
+    <section className="py-16 px-4 md:px-12 max-w-[1400px] mx-auto">
+      <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-black mb-8">
+        Explore what you can build
+      </h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {PRODUCTS.map((product) => (
+          <div 
+            key={product.id} 
+            className="bg-[#F6F6F6] rounded-2xl p-4 md:p-6 flex flex-col justify-between hover:bg-gray-200 transition-colors cursor-pointer group"
+          >
+            <div>
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-lg font-bold text-black">{product.name}</h3>
+                <img 
+                  src={product.img} 
+                  alt={product.name} 
+                  className="w-16 h-12 object-cover rounded shadow-sm mix-blend-multiply group-hover:scale-105 transition-transform"
+                />
+              </div>
+              <p className="text-sm text-gray-700 leading-snug mb-6">
+                {product.desc}
+              </p>
+            </div>
+            <button className="bg-white text-black px-4 py-2 rounded-full text-sm font-medium w-fit shadow-sm">
+              Details
+            </button>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+const PlanForLater = () => {
+  return (
+    <section className="py-16 px-4 md:px-12 max-w-[1400px] mx-auto">
+      <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-black mb-8">
+        Architect for the future
+      </h2>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        {/* Image Card */}
+        <div className="lg:col-span-3 bg-[#E2ECEF] rounded-2xl p-8 relative overflow-hidden flex flex-col justify-center min-h-[400px]">
+           <div className="flex gap-2 mb-4 relative z-10">
+              <button className="bg-black text-white px-4 py-1.5 rounded-full text-sm font-medium">Enterprise</button>
+              <button className="bg-white text-black px-4 py-1.5 rounded-full text-sm font-medium">Edge</button>
+           </div>
+           <h3 className="text-4xl md:text-5xl font-bold text-black leading-tight max-w-md relative z-10">
+              Get your infrastructure right with AnyAstro OS
+           </h3>
+           <div className="mt-8 flex gap-4 relative z-10">
+              <div className="bg-white/80 backdrop-blur rounded-lg p-3 flex items-center gap-3 w-48">
+                 <Calendar size={20} /> <span className="font-medium text-sm">Deployment Date</span>
+              </div>
+              <div className="bg-white/80 backdrop-blur rounded-lg p-3 flex items-center gap-3 w-48">
+                 <Clock size={20} /> <span className="font-medium text-sm">Timeframe</span>
+              </div>
+           </div>
+           {/* Decorative image background */}
+           <img 
+              src="https://images.unsplash.com/photo-1618761714954-0b8cd0026356?auto=format&fit=crop&q=80&w=800" 
+              alt="Background" 
+              className="absolute right-0 top-0 bottom-0 w-1/2 object-cover opacity-40 mix-blend-overlay"
+           />
+        </div>
+
+        {/* Benefits List */}
+        <div className="lg:col-span-2 flex flex-col justify-center">
+          <h3 className="text-2xl font-bold text-black mb-6">Benefits</h3>
+          <ul className="space-y-6">
+            <li className="flex gap-4">
+              <Calendar size={24} className="text-black shrink-0 mt-1" />
+              <p className="text-base text-gray-800">Choose your exact deployment zone and specifications up to 90 days in advance.</p>
+            </li>
+            <li className="flex gap-4">
+              <Clock size={24} className="text-black shrink-0 mt-1" />
+              <p className="text-base text-gray-800">Extra integration time included to meet your complex architecture needs.</p>
+            </li>
+            <li className="flex gap-4">
+              <CreditCard size={24} className="text-black shrink-0 mt-1" />
+              <p className="text-base text-gray-800">Cancel project scoping at no charge up to 60 days before kickoff.</p>
+            </li>
+          </ul>
+          <button className="text-base font-medium text-black underline underline-offset-4 mt-8 hover:text-gray-600 w-fit">
+            See enterprise terms
+          </button>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
-// ============================================================================
-// SECONDARY ENTRY PORTAL: Internal Corporate Presentation
-// ============================================================================
-function CorporateHome() {
+const GlobalImpact = () => {
   return (
-    <main className="w-full bg-white dark:bg-black relative transition-colors duration-300 min-h-screen">
-      <Suspense fallback={<div className="text-black dark:text-white text-center py-20 font-bold uppercase tracking-widest">Loading corporate modules...</div>}>
-        <Hero />
-        <Partners />
-        <Testimonial />
-        <TechStack />
-        <Works />
-        <ContactForm />
-      </Suspense>
-    </main>
+    <section className="py-16 px-4 md:px-12 max-w-[1400px] mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        
+        <div className="flex flex-col">
+          <h2 className="text-4xl md:text-[42px] leading-tight font-bold tracking-tight text-black mb-4">
+            Planning your next digital transformation?
+          </h2>
+          <p className="text-lg text-gray-700 mb-8 max-w-md">
+            From single facility automation to international multi-node deployments, we've got you covered. Explore GIS options, points of interest, and more with our new Platform Hub.
+          </p>
+          <button className="bg-black text-white px-6 py-3 rounded-full text-base font-medium hover:bg-gray-800 transition-colors w-fit flex items-center gap-2">
+            <MapPin size={18} fill="white" className="text-black" /> Explore Solutions
+          </button>
+        </div>
+
+        <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-sm">
+          <img 
+            src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1200" 
+            alt="Global Impact" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+      </div>
+    </section>
   );
-}
+};
 
-// ============================================================================
-// APP ENTRY POINT
-// ============================================================================
-export default function App() {
-  const [activeLanguage, setActiveLanguage] = useState('en');
-  const [theme, setTheme] = useState('light'); // Default to light mode for requested brand aesthetic
-
-  useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
-
+const Footer = () => {
   return (
-    <GlobalErrorBoundary>
-      <EnterpriseContext.Provider value={{ activeLanguage, setActiveLanguage, theme, toggleTheme }}>
-        <BrowserRouter>
-          <GlobalOperationsWidget />
-          <SystemObservers />
-          <NetworkMonitor />
-          <RouteController />
+    <footer className="bg-black text-white pt-16 pb-8 px-4 md:px-12 mt-16">
+      <div className="max-w-[1400px] mx-auto">
+        
+        {/* Top Section: Logo & Help */}
+        <div className="flex flex-col md:flex-row justify-between items-start mb-16 gap-8">
+           <img 
+              src="https://placehold.co/150x50/000000/ffffff?text=AnyAstro&font=montserrat" 
+              alt="AnyAstro Logo" 
+              className="h-8 object-contain"
+            />
+          <div className="flex flex-col md:items-end gap-2 text-sm">
+            <a href="#" className="hover:underline">Do not sell or share my personal information</a>
+            <a href="#" className="hover:underline">Google Data Policy</a>
+          </div>
+        </div>
+        
+        <div className="mb-16">
+          <a href="#" className="text-xl font-medium hover:underline">Visit Help Center</a>
+        </div>
 
-          <AnimatePresence mode="wait">
-            <Routes>
-              {/* Absolute Main Landing Route */}
-              <Route path="/" element={<AnimatedRoute><ComingSoonLanding /></AnimatedRoute>} />
-              
-              {/* Internal / Secondary Routing Architecture */}
-              <Route path="/home" element={
-                <AnimatedRoute>
-                  <Navbar />
-                  <CorporateHome />
-                  <Suspense fallback={null}><Footer /></Suspense>
-                </AnimatedRoute>
-              } />
-              <Route path="/about" element={<AnimatedRoute><Navbar /><About /><Suspense fallback={null}><Footer /></Suspense></AnimatedRoute>} />
-              <Route path="/services" element={<AnimatedRoute><Navbar /><Services /><Suspense fallback={null}><Footer /></Suspense></AnimatedRoute>} />
-              <Route path="/contact" element={<AnimatedRoute><Navbar /><Contact /><Suspense fallback={null}><Footer /></Suspense></AnimatedRoute>} />
-              <Route path="/login" element={<AnimatedRoute><Navbar /><Login /><Suspense fallback={null}><Footer /></Suspense></AnimatedRoute>} />
-              <Route path="/admin" element={<AnimatedRoute><Admin /></AnimatedRoute>} />
+        {/* Links Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+          {Object.entries(FOOTER_LINKS).map(([category, links]) => (
+            <div key={category}>
+              <h3 className="text-lg font-medium mb-4">{category}</h3>
+              <ul className="space-y-3">
+                {links.map((link) => (
+                  <li key={link}>
+                    <a href="#" className="text-gray-300 hover:text-white hover:underline text-sm transition-colors">
+                      {link}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
 
-              {/* Catch-all Fallback */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </AnimatePresence>
-        </BrowserRouter>
-      </EnterpriseContext.Provider>
-    </GlobalErrorBoundary>
+        {/* Bottom Section: Perfect Social SVGs, Language, Legal */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 pt-8 border-t border-gray-800">
+          
+          <div className="flex items-center gap-6">
+            <a href="#" className="text-white hover:text-gray-400 transition-colors"><Linkedin size={22} /></a>
+            <a href="#" className="text-white hover:text-gray-400 transition-colors"><Youtube size={22} /></a>
+            <a href="#" className="text-white hover:text-gray-400 transition-colors"><Instagram size={22} /></a>
+            <a href="#" className="text-white hover:text-gray-400 transition-colors"><Twitter size={22} /></a>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8">
+             <button className="flex items-center text-sm font-medium hover:text-gray-300 transition-colors">
+                <Globe size={16} className="mr-2" /> English
+             </button>
+             <button className="flex items-center text-sm font-medium hover:text-gray-300 transition-colors">
+                <MapPin size={16} className="mr-2" fill="white" stroke="black" /> United States
+             </button>
+          </div>
+
+          <div className="flex flex-wrap gap-6 text-xs text-gray-400">
+            <p>© 2026 AnyAstro Techno Solutions Inc.</p>
+            <div className="flex gap-6">
+              <a href="#" className="hover:text-white transition-colors">Privacy</a>
+              <a href="#" className="hover:text-white transition-colors">Accessibility</a>
+              <a href="#" className="hover:text-white transition-colors">Terms</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </footer>
+  );
+};
+
+export default function App() {
+  return (
+    <div className="min-h-screen bg-white font-sans text-black">
+      <Navbar />
+      <main>
+        <Hero />
+        <ExploreServices />
+        <PlanForLater />
+        <GlobalImpact />
+      </main>
+      <Footer />
+    </div>
   );
 }
