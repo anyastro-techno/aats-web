@@ -7,6 +7,9 @@
       "hosting": {
         "main": [
           "aats.web.app"
+        ],
+        "main-1": [
+          "anyastro.web.app"
         ]
       }
     }
