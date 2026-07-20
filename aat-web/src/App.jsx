@@ -13,51 +13,18 @@ export default function MaintenanceOverlay() {
   const [showOnboarding, setShowOnboarding] = useState(true);
   const navigate = useNavigate();
   
-  // Accessibility States
-  const [fontSize, setFontSize] = useState(1);
-  const [highContrast, setHighContrast] = useState(false);
-  const [dyslexic, setDyslexic] = useState(false);
-  
   // Help Center Form States
   const [helpName, setHelpName] = useState('');
   const [helpEmail, setHelpEmail] = useState('');
   const [helpIssue, setHelpIssue] = useState('');
-  const [contactType, setContactType] = useState('General Inquiry');
-  const [helpStatus, setHelpStatus] = useState('IDLE');
+  const [helpStatus, setHelpStatus] = useState('IDLE'); // IDLE, SUBMITTING, SUCCESS, ERROR
   const [localCity, setLocalCity] = useState('Mumbai');
-
-  // New Help Center Dashboard States
-  const [faqSearch, setFaqSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [expandedFaq, setExpandedFaq] = useState(null);
 
   // New Contact Form States
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactMessage, setContactMessage] = useState('');
   const [contactStatus, setContactStatus] = useState('IDLE');
-
-  // Handle ESC key for modals
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        setShowLangPrompt(false);
-        setShowHelpCenter(false);
-        setShowDeveloper(false);
-        setShowOnboarding(false);
-      }
-    };
-    const handleIssueChange = (val) => {
-  // Logic for category suggestion (without causing input lock)
-  const lower = val.toLowerCase();
-  if (lower.includes('bill') || lower.includes('payment')) setContactType('Billing');
-  else if (lower.includes('bug') || lower.includes('error')) setContactType('Technical');
-  else if (lower.includes('security')) setContactType('Security');
-  else setContactType('General Inquiry');
-};
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   useEffect(() => {
     const sysLang = navigator.language.slice(0, 2);
@@ -78,48 +45,27 @@ export default function MaintenanceOverlay() {
     }
   }, []);
 
-  const [ticketNumber] = useState(`TKT-${Date.now().toString().slice(-4)}`);
-  const [ticketSubject, setTicketSubject] = useState('');
-  const [ticketPriority, setTicketPriority] = useState('Low');
-  const [ticketDepartment, setTicketDepartment] = useState('Support');
-  const [ticketProduct, setTicketProduct] = useState('General');
-  const [attachments, setAttachments] = useState(null);
-  const [lastSubmitTime, setLastSubmitTime] = useState(0);
-
-  // Draft Saving
-  useEffect(() => {
-    const saved = localStorage.getItem('support_draft');
-    if (saved) {
-      const { subject, issue } = JSON.parse(saved);
-      setTicketSubject(subject || '');
-      setHelpIssue(issue || '');
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('support_draft', JSON.stringify({ subject: ticketSubject, issue: helpIssue }));
-  }, [ticketSubject, helpIssue]);
-
   const handleHelpSubmit = async (e) => {
     e.preventDefault();
-    // Email Validation & Spam Protection
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(helpEmail)) { alert('Invalid Email'); return; }
-    if (helpIssue.length < 15) { alert('Spam protection: Message too short.'); return; }
-    // Rate Limiting
-    if (Date.now() - lastSubmitTime < 30000) { alert('Please wait 30 seconds before sending another message.'); return; }
-
     setHelpStatus('SUBMITTING');
     try {
-      setLastSubmitTime(Date.now());
-      const text = `*Ticket: ${ticketNumber}*\nSubject: ${ticketSubject}\nPriority: ${ticketPriority}\nDept: ${ticketDepartment}\nProduct: ${ticketProduct}\nName: ${helpName}\nEmail: ${helpEmail}\nIssue: ${helpIssue}`;
+      // Submitting via WhatsApp strictly
+      const text = `*Maintenance Inquiry*\nName: ${helpName}\nEmail: ${helpEmail}\nIssue: ${helpIssue}`;
       const waUrl = `https://wa.me/918329004424?text=${encodeURIComponent(text)}`;
       window.open(waUrl, '_blank');
       
       setHelpStatus('SUCCESS');
-      localStorage.removeItem('support_draft');
-      setTimeout(() => { setShowHelpCenter(false); setHelpStatus('IDLE'); }, 3000);
+      setTimeout(() => {
+        setShowHelpCenter(false);
+        setHelpStatus('IDLE');
+        setHelpName('');
+        setHelpEmail('');
+        setHelpIssue('');
+      }, 3000);
     } catch (error) {
+      console.error(error);
       setHelpStatus('ERROR');
+      setTimeout(() => setHelpStatus('IDLE'), 3000);
     }
   };
 
@@ -127,6 +73,7 @@ export default function MaintenanceOverlay() {
     e.preventDefault();
     setContactStatus('SUBMITTING');
     try {
+      // Submitting via WhatsApp strictly
       const text = `*General Contact*\nName: ${contactName}\nEmail: ${contactEmail}\nMessage: ${contactMessage}`;
       const waUrl = `https://wa.me/918329004424?text=${encodeURIComponent(text)}`;
       window.open(waUrl, '_blank');
@@ -143,11 +90,6 @@ export default function MaintenanceOverlay() {
       setContactStatus('ERROR');
       setTimeout(() => setContactStatus('IDLE'), 3000);
     }
-  };
-
-  const copyEmail = () => {
-    navigator.clipboard.writeText('engineering@anyastro.tech');
-    alert('Email copied to clipboard');
   };
 
   const t = {
@@ -195,14 +137,8 @@ export default function MaintenanceOverlay() {
   ];
 
   return (
-    <div className={`w-full min-h-screen bg-[#000000] text-white font-sans selection:bg-white selection:text-black overflow-x-hidden flex flex-col relative ${highContrast ? 'high-contrast' : ''} ${dyslexic ? 'dyslexic-font' : ''}`} style={{ fontSize: `${fontSize}rem` }}>
+    <div className="w-full min-h-screen bg-[#000000] text-white font-sans selection:bg-white selection:text-black overflow-x-hidden flex flex-col relative">
       
-      {/* Voice Announcement Region */}
-      <div role="status" aria-live="polite" className="sr-only">
-        {helpStatus === 'SUCCESS' ? 'Message sent successfully.' : ''}
-        {contactStatus === 'SUCCESS' ? 'Message sent successfully.' : ''}
-      </div>
-
       <style>
         {`
           @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
@@ -210,24 +146,9 @@ export default function MaintenanceOverlay() {
           .stagger-1 { animation-delay: 0.1s; }
           .stagger-2 { animation-delay: 0.2s; }
           .stagger-3 { animation-delay: 0.3s; }
-          input:focus, textarea:focus, button:focus { outline: 2px solid #ffffff !important; outline-offset: 2px; }
-          
-          /* Accessibility Styles */
-          .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
-          .high-contrast { background: #000 !important; color: #ffff00 !important; }
-          .high-contrast * { border-color: #ffff00 !important; color: #ffff00 !important; }
-          .high-contrast button { background: #ffff00 !important; color: #000 !important; }
-          .dyslexic-font { font-family: sans-serif !important; letter-spacing: 0.05em !important; word-spacing: 0.1em !important; }
+          input:focus, textarea:focus { border-color: #ffffff !important; }
         `}
       </style>
-
-      {/* Accessibility Toolbar */}
-      <div className="fixed bottom-4 left-4 z-[100] flex gap-2 p-2 bg-[#111] rounded-lg border border-[#333]">
-        <button onClick={() => setFontSize(f => Math.min(f + 0.1, 1.5))} aria-label="Increase text size" className="p-2 text-white bg-transparent hover:bg-[#333] rounded">A+</button>
-        <button onClick={() => setFontSize(f => Math.max(f - 0.1, 0.8))} aria-label="Decrease text size" className="p-2 text-white bg-transparent hover:bg-[#333] rounded">A-</button>
-        <button onClick={() => setHighContrast(!highContrast)} aria-label="Toggle high contrast mode" className="p-2 text-white bg-transparent hover:bg-[#333] rounded">HC</button>
-        <button onClick={() => setDyslexic(!dyslexic)} aria-label="Toggle dyslexia friendly font" className="p-2 text-white bg-transparent hover:bg-[#333] rounded">Df</button>
-      </div>
 
       {/* ONBOARDING FADE SCREEN */}
       <AnimatePresence>
@@ -235,13 +156,13 @@ export default function MaintenanceOverlay() {
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[70] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6"
-            role="dialog" aria-modal="true" aria-labelledby="onboard-title"
           >
             <motion.div 
               initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
               className="w-full max-w-[500px] bg-[#0a0a0a] border border-[#333333] rounded-3xl p-10 flex flex-col items-center text-center shadow-2xl relative"
             >
-              <h1 id="onboard-title" className="text-[2rem] font-black tracking-tight mb-4 text-white">{currentT.onboarding_title}</h1>
+              <h1 className="text-[2rem] font-black tracking-tight mb-4 text-white">{currentT.onboarding_title}</h1>
               <p className="text-[#888888] text-[1.1rem] leading-relaxed mb-8">{currentT.onboarding_sub}</p>
               <a href="https://www.linkedin.com/company/anyastro-techno/services/request-proposal/" target="_blank" rel="noreferrer" className="w-full bg-[#0077b5] text-white py-4 rounded-xl font-black mb-4 hover:bg-[#005582] transition-colors">
                 {currentT.service_req}
@@ -257,26 +178,26 @@ export default function MaintenanceOverlay() {
       {/* TOP HEADER */}
       <header className="w-full flex items-center justify-between px-8 md:px-16 py-8 animate-fade relative z-50">
         <div className="flex items-center gap-2">
-          <img src="/assets/branding/logo.png" alt="AnyAstro Logo" className="h-8 w-auto" onError={(e) => e.target.style.display = 'none'} />
+          <img src="/assets/branding/logo.png" alt="AnyAstro" className="h-8 w-auto" onError={(e) => e.target.style.display = 'none'} />
+          <span className="font-black text-[1.5rem] tracking-tighter ml-[-5px]"></span>
         </div>
         
-        <nav className="flex items-center gap-6 text-[0.9rem] font-bold">
-          <button onClick={() => setShowHelpCenter(true)} className="hover:text-[#aaaaaa] transition-colors hidden sm:block outline-none" aria-label="Open Help Center">
+        <div className="flex items-center gap-6 text-[0.9rem] font-bold">
+          <button onClick={() => setShowHelpCenter(true)} className="hover:text-[#aaaaaa] transition-colors hidden sm:block outline-none">
             {currentT.help}
           </button>
           
           <button 
             onClick={() => setShowLangPrompt(true)}
             className="flex items-center gap-2 hover:text-[#aaaaaa] transition-colors outline-none"
-            aria-label="Select Language"
           >
             {currentT.lang}
           </button>
 
-          <button onClick={() => navigate('/')} className="bg-white text-black px-5 py-2 rounded-full flex items-center gap-2 hover:bg-[#e0e0e0] transition-colors outline-none" aria-label="Contact Page">
+          <button onClick={() => navigate('/')} className="bg-white text-black px-5 py-2 rounded-full flex items-center gap-2 hover:bg-[#e0e0e0] transition-colors outline-none">
             {currentT.back}
           </button>
-        </nav>
+        </div>
       </header>
 
       {/* DEVELOPER CONTACT MODAL */}
@@ -285,13 +206,12 @@ export default function MaintenanceOverlay() {
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"
-            role="dialog" aria-modal="true"
           >
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="w-full max-w-[400px] bg-[#050505] border border-[#333333] rounded-3xl p-8 flex flex-col shadow-2xl relative items-center text-center"
             >
-              <button onClick={() => setShowDeveloper(false)} aria-label="Close modal" className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#888888] hover:text-white transition-colors">
+              <button onClick={() => setShowDeveloper(false)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#888888] hover:text-white transition-colors">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
               
@@ -314,13 +234,12 @@ export default function MaintenanceOverlay() {
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"
-            role="dialog" aria-modal="true"
           >
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="w-full max-w-[400px] bg-[#050505] border border-[#333333] rounded-3xl p-8 flex flex-col shadow-2xl relative"
             >
-              <button onClick={() => setShowLangPrompt(false)} aria-label="Close modal" className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#888888] hover:text-white transition-colors">
+              <button onClick={() => setShowLangPrompt(false)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#888888] hover:text-white transition-colors">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
               
@@ -354,73 +273,32 @@ export default function MaintenanceOverlay() {
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"
-            role="dialog" aria-modal="true"
           >
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-[600px] bg-[#050505] border border-[#333333] rounded-3xl p-8 flex flex-col shadow-2xl relative max-h-[90vh] overflow-y-auto"
+              className="w-full max-w-[500px] bg-[#050505] border border-[#333333] rounded-3xl p-8 flex flex-col shadow-2xl relative max-h-[90vh] overflow-y-auto"
             >
-              <button onClick={() => setShowHelpCenter(false)} aria-label="Close modal" className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#888888] hover:text-white transition-colors">
+              <button onClick={() => setShowHelpCenter(false)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#888888] hover:text-white transition-colors">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
 
               {helpStatus === 'SUCCESS' ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center" role="status">
+                <div className="flex flex-col items-center justify-center py-10 text-center">
                   <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#00ff88" strokeWidth="2" className="mb-4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                   <h3 className="text-[1.5rem] font-black mb-2 text-white">Message Sent</h3>
                   <p className="text-[#888888] text-[0.9rem]">Our support team has received your message.</p>
                 </div>
               ) : helpStatus === 'ERROR' ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center" role="alert">
+                <div className="flex flex-col items-center justify-center py-10 text-center">
                   <h3 className="text-[1.5rem] font-black mb-2 text-[#ff4444]">Message Failed</h3>
                   <p className="text-[#888888] text-[0.9rem]">Please check your internet connection and try again.</p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-6">
-                  {/* --- NEW HELP CENTER FEATURES --- */}
-                  <h2 className="text-[1.5rem] font-black tracking-tight text-white mt-2">Help Center</h2>
+                <>
+                  <h2 className="text-[1.5rem] font-black tracking-tight mb-2 text-white text-center mt-2">Contact Support</h2>
+                  <p className="text-[#888888] text-[0.9rem] text-center mb-6">Send your questions or issues directly to our support team.</p>
                   
-                  {/* Search */}
-                  <input type="text" placeholder="Search FAQs..." value={faqSearch} onChange={(e) => setFaqSearch(e.target.value)} className="w-full bg-[#111] border border-[#333] text-white px-4 py-3 rounded-xl focus:border-white outline-none" />
-
-                  {/* Categories */}
-                  <div className="flex gap-2 overflow-x-auto pb-2">
-                    {['All', 'Technical', 'Billing', 'General', 'Security', 'Enterprise'].map(cat => (
-                      <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-4 py-2 rounded-full text-[0.8rem] border ${activeCategory === cat ? 'bg-white text-black' : 'border-[#333] text-white'}`}>{cat}</button>
-                    ))}
-                  </div>
-
-                  {/* Accordion FAQ */}
-                  <div className="flex flex-col gap-2">
-                    {['How to reset password?', 'Pricing plans explanation', 'System status updates'].map((q, i) => (
-                      <div key={i} className="border border-[#333] rounded-xl overflow-hidden">
-                        <button onClick={() => setExpandedFaq(expandedFaq === i ? null : i)} className="w-full text-left p-4 font-bold bg-[#111]">{q}</button>
-                        {expandedFaq === i && <div className="p-4 bg-[#0a0a0a] text-[#888] text-[0.9rem]">...</div>}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Utilities */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <button onClick={copyEmail} className="bg-[#111] border border-[#333] py-2 rounded-lg text-[0.85rem]">Copy Email</button>
-                    <a href="/docs/guide.pdf" download className="bg-[#111] border border-[#333] py-2 rounded-lg text-[0.85rem] text-center">Troubleshooting Guide</a>
-                    <label className="bg-[#111] border border-[#333] py-2 rounded-lg text-[0.85rem] text-center cursor-pointer">
-                      Upload Screenshot <input type="file" className="hidden" />
-                    </label>
-                    <label className="bg-[#111] border border-[#333] py-2 rounded-lg text-[0.85rem] text-center cursor-pointer">
-                      Upload Log File <input type="file" className="hidden" />
-                    </label>
-                  </div>
-
-                  {/* AI Assistant Button */}
-                  <button className="w-full bg-[#333] py-3 rounded-xl font-bold flex items-center justify-center gap-2">
-                     <span className="animate-pulse">●</span> Ask AI Assistant
-                  </button>
-
-                  <hr className="border-[#333]" />
-                  
-                  {/* EXISTING CONTACT FORM */}
-                  <div className="bg-[#111111] border border-[#333333] rounded-xl p-4">
+                  <div className="bg-[#111111] border border-[#333333] rounded-xl p-4 mb-6">
                     <p className="text-[#aaaaaa] text-[0.85rem] mb-1">Registered Office:</p>
                     <p className="text-white font-bold text-[0.9rem]">AnyAstro Techno Solutions</p>
                     <p className="text-[#aaaaaa] text-[0.8rem] mb-3">Pune, Maharashtra, IN</p>
@@ -428,35 +306,16 @@ export default function MaintenanceOverlay() {
                     <p className="text-white font-bold text-[0.9rem]">engineering@anyastro.tech</p>
                   </div>
 
-                  <form onSubmit={handleHelpSubmit} className="flex flex-col gap-3">
-    <div className="text-[0.7rem] text-[#666]">Ticket: {ticketNumber}</div>
-    <input type="text" required placeholder="Subject" value={ticketSubject} onChange={e => setTicketSubject(e.target.value)} className="w-full bg-[#000] border border-[#333] text-white px-4 py-3 rounded-xl outline-none" />
-    
-    <div className="grid grid-cols-3 gap-2">
-      <select onChange={e => setTicketPriority(e.target.value)} className="bg-[#000] border border-[#333] text-white px-2 py-2 rounded-xl text-[0.8rem]"><option>Low</option><option>Medium</option><option>High</option></select>
-      <select onChange={e => setTicketDepartment(e.target.value)} className="bg-[#000] border border-[#333] text-white px-2 py-2 rounded-xl text-[0.8rem]"><option>Support</option><option>Sales</option><option>Tech</option></select>
-      <select onChange={e => setTicketProduct(e.target.value)} className="bg-[#000] border border-[#333] text-white px-2 py-2 rounded-xl text-[0.8rem]"><option>Platform</option><option>API</option><option>Other</option></select>
-    </div>
-
-    <input type="email" required placeholder="Email" value={helpEmail} onChange={e => setHelpEmail(e.target.value)} className="w-full bg-[#000] border border-[#333] text-white px-4 py-3 rounded-xl outline-none" />
-    
-    <textarea 
-  required 
-  placeholder="Describe your issue..." 
-  value={helpIssue} 
-  onChange={(e) => { setHelpIssue(e.target.value); handleIssueChange(e.target.value); }} 
-  maxLength={500} 
-  className="w-full bg-[#000] border border-[#333] text-white px-4 py-3 rounded-xl outline-none h-24 resize-none"
-/>
-    <div className="text-[0.7rem] text-[#666] text-right">{helpIssue.length}/500</div>
-    
-    <label className="text-[0.8rem] text-[#aaa]">Attachment: <input type="file" onChange={e => setAttachments(e.target.files[0])} /></label>
-
-    <button disabled={helpStatus === 'SUBMITTING'} type="submit" className="w-full bg-white text-black py-3 rounded-xl font-black">
-      {helpStatus === 'SUBMITTING' ? 'SENDING...' : 'Submit Ticket'}
-    </button>
-  </form>
-                </div>
+                  <form onSubmit={handleHelpSubmit} className="flex flex-col gap-4">
+                    <input type="text" required placeholder="Your Full Name" value={helpName} onChange={e => setHelpName(e.target.value)} className="w-full bg-[#000000] border border-[#333333] text-white px-4 py-3.5 rounded-xl outline-none focus:border-white transition-colors text-[0.9rem]" />
+                    <input type="email" required placeholder="Your Email Address" value={helpEmail} onChange={e => setHelpEmail(e.target.value)} className="w-full bg-[#000000] border border-[#333333] text-white px-4 py-3.5 rounded-xl outline-none focus:border-white transition-colors text-[0.9rem]" />
+                    <textarea required placeholder="Describe your issue or question..." value={helpIssue} onChange={e => setHelpIssue(e.target.value)} rows="4" className="w-full bg-[#000000] border border-[#333333] text-white px-4 py-3.5 rounded-xl outline-none focus:border-white transition-colors text-[0.9rem] resize-none"></textarea>
+                    
+                    <button disabled={helpStatus === 'SUBMITTING'} type="submit" className="w-full bg-white text-black py-3.5 rounded-xl font-black mt-2 hover:bg-[#e0e0e0] transition-colors disabled:opacity-50">
+                      {helpStatus === 'SUBMITTING' ? 'SENDING...' : 'Send Message'}
+                    </button>
+                  </form>
+                </>
               )}
             </motion.div>
           </motion.div>
@@ -464,12 +323,12 @@ export default function MaintenanceOverlay() {
       </AnimatePresence>
 
       {/* MAIN CONTAINER */}
-      <main className="w-full max-w-[1400px] mx-auto px-8 md:px-16 py-12 flex flex-col gap-20 relative z-10 flex-1">
+      <div className="w-full max-w-[1400px] mx-auto px-8 md:px-16 py-12 flex flex-col gap-20 relative z-10 flex-1">
         
         {/* SECTION 1: MAINTENANCE MESSAGING */}
         <div className="flex flex-col lg:flex-row gap-20 items-start justify-between opacity-0 animate-fade stagger-1">
           <div className="flex-1">
-            <div className="w-16 h-16 rounded-full bg-[#111111] border border-[#333333] flex items-center justify-center mb-6" role="img" aria-label="Maintenance Icon">
+            <div className="w-16 h-16 rounded-full bg-[#111111] border border-[#333333] flex items-center justify-center mb-6">
               <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="animate-[spin_4s_linear_infinite]">
                 <path d="M12 2v4"></path>
                 <path d="M12 18v4"></path>
@@ -526,21 +385,21 @@ export default function MaintenanceOverlay() {
           <div className="flex flex-col gap-4 max-w-2xl">
             <div className="flex items-center justify-between p-5 bg-[#0a0a0a] rounded-xl border border-[#333333]">
               <span className="font-bold text-[1.1rem]">Core Infrastructure</span>
-              <span className="text-[#888888] flex items-center gap-2" role="status">
+              <span className="text-[#888888] flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
                 Updating
               </span>
             </div>
             <div className="flex items-center justify-between p-5 bg-[#0a0a0a] rounded-xl border border-[#333333]">
               <span className="font-bold text-[1.1rem]">Database Nodes</span>
-              <span className="text-[#888888] flex items-center gap-2" role="status">
+              <span className="text-[#888888] flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
                 Optimizing
               </span>
             </div>
             <div className="flex items-center justify-between p-5 bg-[#0a0a0a] rounded-xl border border-[#333333]">
               <span className="font-bold text-[1.1rem]">API Services</span>
-              <span className="text-[#888888] flex items-center gap-2" role="status">
+              <span className="text-[#888888] flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-red-500"></span>
                 Offline
               </span>
@@ -596,17 +455,18 @@ export default function MaintenanceOverlay() {
           
           <form onSubmit={handleContactSubmit} className="flex flex-col gap-5">
              <div className="flex flex-col md:flex-row gap-5">
-               <input type="text" required placeholder="Full Name" aria-label="Full Name" value={contactName} onChange={e => setContactName(e.target.value)} className="w-full bg-[#050505] border border-[#333333] text-white px-5 py-4 rounded-xl outline-none focus:border-white transition-colors" />
-               <input type="email" required placeholder="Email Address" aria-label="Email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} className="w-full bg-[#050505] border border-[#333333] text-white px-5 py-4 rounded-xl outline-none focus:border-white transition-colors" />
+               <input type="text" required placeholder="Full Name" value={contactName} onChange={e => setContactName(e.target.value)} className="w-full bg-[#050505] border border-[#333333] text-white px-5 py-4 rounded-xl outline-none focus:border-white transition-colors" />
+               <input type="email" required placeholder="Email Address" value={contactEmail} onChange={e => setContactEmail(e.target.value)} className="w-full bg-[#050505] border border-[#333333] text-white px-5 py-4 rounded-xl outline-none focus:border-white transition-colors" />
              </div>
-             <textarea required placeholder="How can we assist you today?" aria-label="Message" value={contactMessage} onChange={e => setContactMessage(e.target.value)} rows="5" className="w-full bg-[#050505] border border-[#333333] text-white px-5 py-4 rounded-xl outline-none focus:border-white transition-colors resize-none"></textarea>
+             <textarea required placeholder="How can we assist you today?" value={contactMessage} onChange={e => setContactMessage(e.target.value)} rows="5" className="w-full bg-[#050505] border border-[#333333] text-white px-5 py-4 rounded-xl outline-none focus:border-white transition-colors resize-none"></textarea>
              
              <button disabled={contactStatus === 'SUBMITTING'} type="submit" className="w-full md:w-auto self-start bg-white text-black px-10 py-4 rounded-xl font-black mt-2 hover:bg-[#e0e0e0] transition-colors disabled:opacity-50 text-[1.1rem]">
                {contactStatus === 'SUBMITTING' ? 'SENDING...' : contactStatus === 'SUCCESS' ? 'SENT SUCCESSFULLY' : contactStatus === 'ERROR' ? 'FAILED, TRY AGAIN' : 'Submit Message'}
              </button>
           </form>
         </motion.div>
-      </main>
+
+      </div>
 
       {/* FOOTER ALIGNMENT */}
       <footer className="w-full max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-8 px-8 md:px-16 py-8 border-t border-[#111111] opacity-0 animate-fade stagger-3 relative z-10">
