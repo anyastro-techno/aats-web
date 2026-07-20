@@ -3,5 +3,50 @@
 @layer base {
   body {
     @apply antialiased bg-white text-black;
+    transition: font-size 0.3s ease, filter 0.3s ease, background-color 0.3s ease;
+  }
+
+  /* Accessibility: Typography Scaling */
+  :root[data-font-size="base"] {
+    font-size: 100%;
+  }
+  :root[data-font-size="large"] {
+    font-size: 112.5%;
+  }
+  :root[data-font-size="xlarge"] {
+    font-size: 125%;
+  }
+
+  /* Accessibility: High Contrast Inversion */
+  :root.high-contrast {
+    filter: invert(100%) hue-rotate(180deg) contrast(150%);
+    background-color: #000000;
+  }
+  
+  /* Double-invert media assets to preserve original color in high contrast mode */
+  :root.high-contrast img, 
+  :root.high-contrast video,
+  :root.high-contrast svg {
+    filter: invert(100%) hue-rotate(180deg);
+  }
+
+  /* Accessibility: Color Blindness Display Filters */
+  :root[data-color-filter="protanopia"] {
+    filter: grayscale(20%) sepia(10%) hue-rotate(-10deg) saturate(150%);
+  }
+  :root[data-color-filter="deuteranopia"] {
+    filter: grayscale(20%) sepia(10%) hue-rotate(10deg) saturate(150%);
+  }
+  :root[data-color-filter="tritanopia"] {
+    filter: grayscale(10%) sepia(20%) hue-rotate(180deg) saturate(150%);
+  }
+
+  /* Accessibility: Dyslexia Reading Support */
+  :root.dyslexia-font,
+  :root.dyslexia-font * {
+    font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif !important;
+    letter-spacing: 0.1em !important;
+    word-spacing: 0.2em !important;
+    line-height: 1.6 !important;
   }
 }
