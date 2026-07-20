@@ -135,11 +135,11 @@ export function HelpCenterModal({ showHelpCenter, setShowHelpCenter, currentT, h
                 <p className="text-[#888888] text-[0.9rem] text-center mb-6">Send your questions or issues directly to our support team.</p>
                 
                 <div className="bg-[#111111] border border-[#333333] rounded-xl p-4 mb-6">
-                  <p className="text-[#aaaaaa] text-[0.85rem] mb-1">Registered Office:</p>
+                  <p className="text-[#aaaaaa] text-[0.85rem] mb-1">Registered & Virtual Office:</p>
                   <p className="text-white font-bold text-[0.9rem]">AnyAstro Techno Solutions</p>
-                  <p className="text-[#aaaaaa] text-[0.8rem] mb-3">Pune, Maharashtra, IN</p>
+                  <p className="text-[#aaaaaa] text-[0.8rem] mb-3">Pune, Maharashtra, IN & Bengaluru, Karnataka, IN</p>
                   <p className="text-[#aaaaaa] text-[0.85rem] mb-1">E-mailing Address:</p>
-                  <p className="text-white font-bold text-[0.9rem]">engineering@anyastro.tech</p>
+                  <p className="text-white font-bold text-[0.9rem]">help.aat@tuta.io</p>
                 </div>
 
                 <form onSubmit={handleHelpSubmit} className="flex flex-col gap-4">

@@ -16,6 +16,7 @@ export default function MaintenanceOverlay() {
   const [showHelpCenter, setShowHelpCenter] = useState(false);
   const [showDeveloper, setShowDeveloper] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showAccessibility, setShowAccessibility] = useState(false);
   const navigate = useNavigate();
   
   // Help Center Form States
@@ -119,11 +120,17 @@ export default function MaintenanceOverlay() {
       <LanguageModal showLangPrompt={showLangPrompt} setShowLangPrompt={setShowLangPrompt} languageOptions={languageOptions} lang={lang} setLang={setLang} />
       <HelpCenterModal showHelpCenter={showHelpCenter} setShowHelpCenter={setShowHelpCenter} currentT={currentT} helpStatus={helpStatus} helpName={helpName} setHelpName={setHelpName} helpEmail={helpEmail} setHelpEmail={setHelpEmail} helpIssue={helpIssue} setHelpIssue={setHelpIssue} handleHelpSubmit={handleHelpSubmit} />
 
-      {/* ACCESSIBILITY WIDGET */}
-      <AccessibilityWidget />
+      {/* ACCESSIBILITY MODAL CONTAINER */}
+      <AccessibilityWidget isOpen={showAccessibility} onClose={() => setShowAccessibility(false)} />
 
       {/* HEADER */}
-      <MaintenanceHeader currentT={currentT} setShowHelpCenter={setShowHelpCenter} setShowLangPrompt={setShowLangPrompt} navigate={navigate} />
+      <MaintenanceHeader 
+        currentT={currentT} 
+        setShowHelpCenter={setShowHelpCenter} 
+        setShowLangPrompt={setShowLangPrompt} 
+        navigate={navigate} 
+        onToggleAccessibility={() => setShowAccessibility(!showAccessibility)}
+      />
 
       {/* MAIN CONTAINER */}
       <div className="w-full max-w-[1400px] mx-auto px-8 md:px-16 py-12 flex flex-col gap-20 relative z-10 flex-1">
