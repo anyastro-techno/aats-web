@@ -61,7 +61,7 @@ const Navbar = () => {
           <div className="flex-shrink-0 flex items-center">
             <Link to="/">
               <img 
-                src="/assets/branding/logo.png" 
+                src="/assets/branding/logo2.png" 
                 alt="AAT Group Corporate Logo" 
                 className="h-10 w-auto"
                 onError={(e) => {
