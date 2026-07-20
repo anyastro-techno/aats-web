@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "aatgroup"
-  }
+  },
+  "targets": {
+    "aatgroup": {
+      "hosting": {
+        "main": [
+          "aats.web.app"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
