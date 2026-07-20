@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from './firebaseConfig'; 
+import { db } from '../../firebaseConfig'; 
 import { motion, AnimatePresence } from 'framer-motion';
-import Footer from './components/Footer';
-import Home from './pages/Home';
+import Footer from '../../components/Footer';
 
-export function MaintenanceOverlay() {
+export default function MaintenanceOverlay() {
   const [lang, setLang] = useState('en');
   const [showLangPrompt, setShowLangPrompt] = useState(false);
   const [showHelpCenter, setShowHelpCenter] = useState(false);
@@ -15,7 +14,7 @@ export function MaintenanceOverlay() {
   const [helpName, setHelpName] = useState('');
   const [helpEmail, setHelpEmail] = useState('');
   const [helpIssue, setHelpIssue] = useState('');
-  const [helpStatus, setHelpStatus] = useState('IDLE'); 
+  const [helpStatus, setHelpStatus] = useState('IDLE');
   const [localCity, setLocalCity] = useState('Mumbai');
 
   useEffect(() => {
@@ -133,14 +132,5 @@ export function MaintenanceOverlay() {
          <Footer localCity={localCity} onHelpClick={() => setShowHelpCenter(true)} />
       </div>
     </div>
-  );
-}
-
-export default function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/maintenance" element={<MaintenanceOverlay />} />
-    </Routes>
   );
 }
