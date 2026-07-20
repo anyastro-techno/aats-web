@@ -48,12 +48,13 @@ export default function MaintenanceOverlay() {
       }
     };
     const handleIssueChange = (val) => {
-    setHelpIssue(val);
-    const lower = val.toLowerCase();
-    if (lower.includes('bill') || lower.includes('payment')) setContactType('Billing');
-    else if (lower.includes('bug') || lower.includes('error')) setContactType('Technical');
-    else if (lower.includes('security')) setContactType('Security');
-  };
+  // Logic for category suggestion (without causing input lock)
+  const lower = val.toLowerCase();
+  if (lower.includes('bill') || lower.includes('payment')) setContactType('Billing');
+  else if (lower.includes('bug') || lower.includes('error')) setContactType('Technical');
+  else if (lower.includes('security')) setContactType('Security');
+  else setContactType('General Inquiry');
+};
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
@@ -439,7 +440,14 @@ export default function MaintenanceOverlay() {
 
     <input type="email" required placeholder="Email" value={helpEmail} onChange={e => setHelpEmail(e.target.value)} className="w-full bg-[#000] border border-[#333] text-white px-4 py-3 rounded-xl outline-none" />
     
-    <textarea required placeholder="Describe your issue..." value={helpIssue} onChange={e => handleIssueChange(e.target.value)} maxLength={500} className="w-full bg-[#000] border border-[#333] text-white px-4 py-3 rounded-xl outline-none h-24 resize-none"></textarea>
+    <textarea 
+  required 
+  placeholder="Describe your issue..." 
+  value={helpIssue} 
+  onChange={(e) => { setHelpIssue(e.target.value); handleIssueChange(e.target.value); }} 
+  maxLength={500} 
+  className="w-full bg-[#000] border border-[#333] text-white px-4 py-3 rounded-xl outline-none h-24 resize-none"
+/>
     <div className="text-[0.7rem] text-[#666] text-right">{helpIssue.length}/500</div>
     
     <label className="text-[0.8rem] text-[#aaa]">Attachment: <input type="file" onChange={e => setAttachments(e.target.files[0])} /></label>
