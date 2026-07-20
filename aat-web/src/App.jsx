@@ -26,6 +26,11 @@ export default function MaintenanceOverlay() {
   const [helpStatus, setHelpStatus] = useState('IDLE');
   const [localCity, setLocalCity] = useState('Mumbai');
 
+  // New Help Center Dashboard States
+  const [faqSearch, setFaqSearch] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [expandedFaq, setExpandedFaq] = useState(null);
+
   // New Contact Form States
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
@@ -109,6 +114,11 @@ export default function MaintenanceOverlay() {
       setContactStatus('ERROR');
       setTimeout(() => setContactStatus('IDLE'), 3000);
     }
+  };
+
+  const copyEmail = () => {
+    navigator.clipboard.writeText('engineering@anyastro.tech');
+    alert('Email copied to clipboard');
   };
 
   const t = {
@@ -319,7 +329,7 @@ export default function MaintenanceOverlay() {
           >
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-[500px] bg-[#050505] border border-[#333333] rounded-3xl p-8 flex flex-col shadow-2xl relative max-h-[90vh] overflow-y-auto"
+              className="w-full max-w-[600px] bg-[#050505] border border-[#333333] rounded-3xl p-8 flex flex-col shadow-2xl relative max-h-[90vh] overflow-y-auto"
             >
               <button onClick={() => setShowHelpCenter(false)} aria-label="Close modal" className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#888888] hover:text-white transition-colors">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -337,11 +347,51 @@ export default function MaintenanceOverlay() {
                   <p className="text-[#888888] text-[0.9rem]">Please check your internet connection and try again.</p>
                 </div>
               ) : (
-                <>
-                  <h2 className="text-[1.5rem] font-black tracking-tight mb-2 text-white text-center mt-2">Contact Support</h2>
-                  <p className="text-[#888888] text-[0.9rem] text-center mb-6">Send your questions or issues directly to our support team.</p>
+                <div className="flex flex-col gap-6">
+                  {/* --- NEW HELP CENTER FEATURES --- */}
+                  <h2 className="text-[1.5rem] font-black tracking-tight text-white mt-2">Help Center</h2>
                   
-                  <div className="bg-[#111111] border border-[#333333] rounded-xl p-4 mb-6">
+                  {/* Search */}
+                  <input type="text" placeholder="Search FAQs..." value={faqSearch} onChange={(e) => setFaqSearch(e.target.value)} className="w-full bg-[#111] border border-[#333] text-white px-4 py-3 rounded-xl focus:border-white outline-none" />
+
+                  {/* Categories */}
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {['All', 'Technical', 'Billing', 'General', 'Security', 'Enterprise'].map(cat => (
+                      <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-4 py-2 rounded-full text-[0.8rem] border ${activeCategory === cat ? 'bg-white text-black' : 'border-[#333] text-white'}`}>{cat}</button>
+                    ))}
+                  </div>
+
+                  {/* Accordion FAQ */}
+                  <div className="flex flex-col gap-2">
+                    {['How to reset password?', 'Pricing plans explanation', 'System status updates'].map((q, i) => (
+                      <div key={i} className="border border-[#333] rounded-xl overflow-hidden">
+                        <button onClick={() => setExpandedFaq(expandedFaq === i ? null : i)} className="w-full text-left p-4 font-bold bg-[#111]">{q}</button>
+                        {expandedFaq === i && <div className="p-4 bg-[#0a0a0a] text-[#888] text-[0.9rem]">...</div>}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Utilities */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={copyEmail} className="bg-[#111] border border-[#333] py-2 rounded-lg text-[0.85rem]">Copy Email</button>
+                    <a href="/docs/guide.pdf" download className="bg-[#111] border border-[#333] py-2 rounded-lg text-[0.85rem] text-center">Troubleshooting Guide</a>
+                    <label className="bg-[#111] border border-[#333] py-2 rounded-lg text-[0.85rem] text-center cursor-pointer">
+                      Upload Screenshot <input type="file" className="hidden" />
+                    </label>
+                    <label className="bg-[#111] border border-[#333] py-2 rounded-lg text-[0.85rem] text-center cursor-pointer">
+                      Upload Log File <input type="file" className="hidden" />
+                    </label>
+                  </div>
+
+                  {/* AI Assistant Button */}
+                  <button className="w-full bg-[#333] py-3 rounded-xl font-bold flex items-center justify-center gap-2">
+                     <span className="animate-pulse">●</span> Ask AI Assistant
+                  </button>
+
+                  <hr className="border-[#333]" />
+                  
+                  {/* EXISTING CONTACT FORM */}
+                  <div className="bg-[#111111] border border-[#333333] rounded-xl p-4">
                     <p className="text-[#aaaaaa] text-[0.85rem] mb-1">Registered Office:</p>
                     <p className="text-white font-bold text-[0.9rem]">AnyAstro Techno Solutions</p>
                     <p className="text-[#aaaaaa] text-[0.8rem] mb-3">Pune, Maharashtra, IN</p>
@@ -375,7 +425,7 @@ export default function MaintenanceOverlay() {
                       {helpStatus === 'SUBMITTING' ? 'SENDING...' : 'Send Message'}
                     </button>
                   </form>
-                </>
+                </div>
               )}
             </motion.div>
           </motion.div>
@@ -501,7 +551,7 @@ export default function MaintenanceOverlay() {
              </div>
           </div>
         </motion.div>
-              
+
         {/* SECTION 5: INLINE CONTACT FORM */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
