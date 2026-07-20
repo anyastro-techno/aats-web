@@ -1,19 +1,34 @@
 import React from 'react';
-import { Linkedin, Instagram, Globe, MapPin } from 'lucide-react';
+import { Globe, MapPin } from 'lucide-react';
 
 /**
  * ============================================================================
  * MODULE: PREMIUM FOOTER NAVIGATION (aat-main)
  * Architecture: Deep, dark-themed, multi-column layout matching reference.
- * Features: High-end custom SVG icons (including modern X logo), AnyAstro Logo
- * integration, App Store / Google Play interactive badges, and precise 
- * typography matrices.
+ * Features: High-end custom SVG icons, AnyAstro Logo integration, 
+ * and precise typography matrices.
  * ============================================================================
  */
 
 // ============================================================================
 // CUSTOM ASSETS & SVGs
 // ============================================================================
+
+const IconLinkedIn = ({ size = 20, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+    <rect width="4" height="12" x="2" y="9"></rect>
+    <circle cx="4" cy="4" r="2"></circle>
+  </svg>
+);
+
+const IconInstagram = ({ size = 20, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
+  </svg>
+);
 
 const YoutubeIcon = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
@@ -56,7 +71,7 @@ export default function Footer({ localCity = "Pune", onHelpClick }) {
         {/* Top Section: Logo & Localization Links */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-8">
           <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer">
-            <img src="/logo.png" alt="AnyAstro" className="w-10 h-10 object-contain" onError={(e) => e.target.style.display='none'} />
+            <img src="/logo.png" alt="Movyra" className="w-10 h-10 object-contain" onError={(e) => e.target.style.display='none'} />
             <div className="text-[32px] font-black tracking-tighter ml-[-5px]">nyAstro</div>
           </a>
           <div className="flex gap-1 font-bold text-[15px]">
@@ -82,12 +97,12 @@ export default function Footer({ localCity = "Pune", onHelpClick }) {
           <div>
             <h4 className="font-bold text-[18px] mb-8 text-white">Products</h4>
             <ul className="space-y-4 font-medium text-[15px] text-gray-300">
-              <li><a href="#" className="hover:text-white transition-colors">AtlasGrid</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">GeoPulse</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">SecureStack</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">AutoPilot AI</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">FactoryOS</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Enterprise Solutions</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Ride</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Drive</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Eat</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Movyra for Business</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Movyra Freight</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Gift cards</a></li>
             </ul>
           </div>
           <div>
@@ -113,9 +128,9 @@ export default function Footer({ localCity = "Pune", onHelpClick }) {
           
           <div className="flex flex-wrap items-center gap-8">
             <div className="flex items-center gap-6">
-              <a href="#" className="text-white hover:text-gray-400 transition-colors"><Linkedin size={20} /></a>
+              <a href="#" className="text-white hover:text-gray-400 transition-colors"><IconLinkedIn /></a>
               <a href="#" className="text-white hover:text-gray-400 transition-colors"><YoutubeIcon /></a>
-              <a href="#" className="text-white hover:text-gray-400 transition-colors"><Instagram size={20} /></a>
+              <a href="#" className="text-white hover:text-gray-400 transition-colors"><IconInstagram /></a>
               <a href="#" className="text-white hover:text-gray-400 transition-colors"><XTwitterIcon /></a>
             </div>
             
