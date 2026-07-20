@@ -76,7 +76,7 @@ const Navbar = () => {
           {/* Strictly Image Logo */}
           <a href="#" className="mr-8 flex items-center">
              <img 
-              src="https://placehold.co/120x40/000000/ffffff?text=AnyAstro&font=montserrat" 
+              src="/assets/branding/logo.png" 
               alt="AnyAstro Logo" 
               className="h-6 object-contain"
             />
@@ -125,7 +125,7 @@ const Navbar = () => {
           >
             <div className="bg-black text-white h-16 flex items-center justify-between px-4 sticky top-0">
                <img 
-                src="https://placehold.co/120x40/000000/ffffff?text=AnyAstro&font=montserrat" 
+                src="/assets/branding/logo.png" 
                 alt="AnyAstro Logo" 
                 className="h-6 object-contain"
               />
@@ -378,7 +378,7 @@ const Footer = () => {
         {/* Top Section: Logo & Help */}
         <div className="flex flex-col md:flex-row justify-between items-start mb-16 gap-8">
            <img 
-              src="https://placehold.co/150x50/000000/ffffff?text=AnyAstro&font=montserrat" 
+              src="/assets/branding/logo.png" 
               alt="AnyAstro Logo" 
               className="h-8 object-contain"
             />
