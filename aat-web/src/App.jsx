@@ -47,6 +47,13 @@ export default function MaintenanceOverlay() {
         setShowOnboarding(false);
       }
     };
+    const handleIssueChange = (val) => {
+    setHelpIssue(val);
+    const lower = val.toLowerCase();
+    if (lower.includes('bill') || lower.includes('payment')) setContactType('Billing');
+    else if (lower.includes('bug') || lower.includes('error')) setContactType('Technical');
+    else if (lower.includes('security')) setContactType('Security');
+  };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
@@ -70,27 +77,48 @@ export default function MaintenanceOverlay() {
     }
   }, []);
 
+  const [ticketNumber] = useState(`TKT-${Date.now().toString().slice(-4)}`);
+  const [ticketSubject, setTicketSubject] = useState('');
+  const [ticketPriority, setTicketPriority] = useState('Low');
+  const [ticketDepartment, setTicketDepartment] = useState('Support');
+  const [ticketProduct, setTicketProduct] = useState('General');
+  const [attachments, setAttachments] = useState(null);
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
+
+  // Draft Saving
+  useEffect(() => {
+    const saved = localStorage.getItem('support_draft');
+    if (saved) {
+      const { subject, issue } = JSON.parse(saved);
+      setTicketSubject(subject || '');
+      setHelpIssue(issue || '');
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('support_draft', JSON.stringify({ subject: ticketSubject, issue: helpIssue }));
+  }, [ticketSubject, helpIssue]);
+
   const handleHelpSubmit = async (e) => {
     e.preventDefault();
+    // Email Validation & Spam Protection
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(helpEmail)) { alert('Invalid Email'); return; }
+    if (helpIssue.length < 15) { alert('Spam protection: Message too short.'); return; }
+    // Rate Limiting
+    if (Date.now() - lastSubmitTime < 30000) { alert('Please wait 30 seconds before sending another message.'); return; }
+
     setHelpStatus('SUBMITTING');
     try {
-      const text = `*Maintenance Inquiry*\nType: ${contactType}\nName: ${helpName}\nEmail: ${helpEmail}\nIssue: ${helpIssue}`;
+      setLastSubmitTime(Date.now());
+      const text = `*Ticket: ${ticketNumber}*\nSubject: ${ticketSubject}\nPriority: ${ticketPriority}\nDept: ${ticketDepartment}\nProduct: ${ticketProduct}\nName: ${helpName}\nEmail: ${helpEmail}\nIssue: ${helpIssue}`;
       const waUrl = `https://wa.me/918329004424?text=${encodeURIComponent(text)}`;
       window.open(waUrl, '_blank');
       
       setHelpStatus('SUCCESS');
-      setTimeout(() => {
-        setShowHelpCenter(false);
-        setHelpStatus('IDLE');
-        setHelpName('');
-        setHelpEmail('');
-        setHelpIssue('');
-        setContactType('General Inquiry');
-      }, 3000);
+      localStorage.removeItem('support_draft');
+      setTimeout(() => { setShowHelpCenter(false); setHelpStatus('IDLE'); }, 3000);
     } catch (error) {
-      console.error(error);
       setHelpStatus('ERROR');
-      setTimeout(() => setHelpStatus('IDLE'), 3000);
     }
   };
 
@@ -399,32 +427,27 @@ export default function MaintenanceOverlay() {
                     <p className="text-white font-bold text-[0.9rem]">engineering@anyastro.tech</p>
                   </div>
 
-                  <form onSubmit={handleHelpSubmit} className="flex flex-col gap-4">
-                    <input type="text" required placeholder="Your Full Name" aria-label="Full Name" value={helpName} onChange={e => setHelpName(e.target.value)} className="w-full bg-[#000000] border border-[#333333] text-white px-4 py-3.5 rounded-xl outline-none focus:border-white transition-colors text-[0.9rem]" />
-                    <input type="email" required placeholder="Your Email Address" aria-label="Email" value={helpEmail} onChange={e => setHelpEmail(e.target.value)} className="w-full bg-[#000000] border border-[#333333] text-white px-4 py-3.5 rounded-xl outline-none focus:border-white transition-colors text-[0.9rem]" />
-                    
-                    <select 
-                      value={contactType} 
-                      onChange={e => setContactType(e.target.value)} 
-                      className="w-full bg-[#000000] border border-[#333333] text-white px-4 py-3.5 rounded-xl outline-none focus:border-white transition-colors text-[0.9rem]"
-                    >
-                      <option value="General Inquiry">General Inquiry</option>
-                      <option value="Request quotation">Request quotation</option>
-                      <option value="Request demo">Request demo</option>
-                      <option value="Partnership inquiry">Partnership inquiry</option>
-                      <option value="Career inquiry">Career inquiry</option>
-                      <option value="Vendor inquiry">Vendor inquiry</option>
-                      <option value="Investor inquiry">Investor inquiry</option>
-                      <option value="Press inquiry">Press inquiry</option>
-                      <option value="Media contact">Media contact</option>
-                    </select>
+                  <form onSubmit={handleHelpSubmit} className="flex flex-col gap-3">
+    <div className="text-[0.7rem] text-[#666]">Ticket: {ticketNumber}</div>
+    <input type="text" required placeholder="Subject" value={ticketSubject} onChange={e => setTicketSubject(e.target.value)} className="w-full bg-[#000] border border-[#333] text-white px-4 py-3 rounded-xl outline-none" />
+    
+    <div className="grid grid-cols-3 gap-2">
+      <select onChange={e => setTicketPriority(e.target.value)} className="bg-[#000] border border-[#333] text-white px-2 py-2 rounded-xl text-[0.8rem]"><option>Low</option><option>Medium</option><option>High</option></select>
+      <select onChange={e => setTicketDepartment(e.target.value)} className="bg-[#000] border border-[#333] text-white px-2 py-2 rounded-xl text-[0.8rem]"><option>Support</option><option>Sales</option><option>Tech</option></select>
+      <select onChange={e => setTicketProduct(e.target.value)} className="bg-[#000] border border-[#333] text-white px-2 py-2 rounded-xl text-[0.8rem]"><option>Platform</option><option>API</option><option>Other</option></select>
+    </div>
 
-                    <textarea required placeholder="Describe your issue or question..." aria-label="Message" value={helpIssue} onChange={e => setHelpIssue(e.target.value)} rows="4" className="w-full bg-[#000000] border border-[#333333] text-white px-4 py-3.5 rounded-xl outline-none focus:border-white transition-colors text-[0.9rem] resize-none"></textarea>
-                    
-                    <button disabled={helpStatus === 'SUBMITTING'} type="submit" className="w-full bg-white text-black py-3.5 rounded-xl font-black mt-2 hover:bg-[#e0e0e0] transition-colors disabled:opacity-50">
-                      {helpStatus === 'SUBMITTING' ? 'SENDING...' : 'Send Message'}
-                    </button>
-                  </form>
+    <input type="email" required placeholder="Email" value={helpEmail} onChange={e => setHelpEmail(e.target.value)} className="w-full bg-[#000] border border-[#333] text-white px-4 py-3 rounded-xl outline-none" />
+    
+    <textarea required placeholder="Describe your issue..." value={helpIssue} onChange={e => handleIssueChange(e.target.value)} maxLength={500} className="w-full bg-[#000] border border-[#333] text-white px-4 py-3 rounded-xl outline-none h-24 resize-none"></textarea>
+    <div className="text-[0.7rem] text-[#666] text-right">{helpIssue.length}/500</div>
+    
+    <label className="text-[0.8rem] text-[#aaa]">Attachment: <input type="file" onChange={e => setAttachments(e.target.files[0])} /></label>
+
+    <button disabled={helpStatus === 'SUBMITTING'} type="submit" className="w-full bg-white text-black py-3 rounded-xl font-black">
+      {helpStatus === 'SUBMITTING' ? 'SENDING...' : 'Submit Ticket'}
+    </button>
+  </form>
                 </div>
               )}
             </motion.div>
