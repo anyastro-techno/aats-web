@@ -6,10 +6,10 @@
     "aatgroup": {
       "hosting": {
         "main": [
-          "aats.web.app"
+          "aats"
         ],
         "main-1": [
-          "anyastro.web.app"
+          "anyastro"
         ]
       }
     }
