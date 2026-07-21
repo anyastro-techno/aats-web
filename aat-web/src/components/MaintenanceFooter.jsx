@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function MaintenanceFooter({ currentT, setShowDeveloper, setShowHelpCenter, localCity }) {
   return (
-    <footer className="w-full max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-8 px-8 md:px-16 py-8 border-t border-[#111111] opacity-0 animate-fade stagger-3 relative z-10">
+    <footer className="w-full max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-8 px-8 md:px-16 py-8 border-t border-[#111111] relative z-20 mt-auto">
       
       {/* Custom SVG Social Icons */}
       <div className="flex items-center gap-8 text-[#555555]">
