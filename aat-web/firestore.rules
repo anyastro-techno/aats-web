@@ -10,5 +10,10 @@ service cloud.firestore {
       allow create: if true;
       allow read, update, delete: if false;
     }
+    // Allow secure write access for developer portal access requests
+    match /access_requests/{document=**} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
   }
 }

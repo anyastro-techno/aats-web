@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../firebaseConfig';
+import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import { auth, db } from '../../firebaseConfig';
 import SEOHead from '../../components/SEOHead';
 import MaintenanceHeader from '../../components/MaintenanceHeader';
 import MaintenanceFooter from '../../components/MaintenanceFooter';
@@ -19,10 +20,15 @@ export default function DeveloperPortal() {
   const [showSitemap, setShowSitemap] = useState(false);
   const navigate = useNavigate();
 
-  // Authentication & Request Access States
+  // Authentication & Session States
+  const [currentUser, setCurrentUser] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('LOGIN'); // 'LOGIN' or 'REQUEST'
   
+  // Inactivity Timer States
+  const [showLogoutWarning, setShowLogoutWarning] = useState(false);
+  const [countdownTime, setCountdownTime] = useState(15);
+
   // Login Form States
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -33,7 +39,12 @@ export default function DeveloperPortal() {
   const [reqEmail, setReqEmail] = useState('');
   const [reqOrg, setReqOrg] = useState('');
   const [reqPurpose, setReqPurpose] = useState('');
+  const [consentGiven, setConsentGiven] = useState(false);
+  const [spamAnswer, setSpamAnswer] = useState('');
+  const [num1] = useState(Math.floor(Math.random() * 10) + 1);
+  const [num2] = useState(Math.floor(Math.random() * 10) + 1);
   const [reqStatus, setReqStatus] = useState('IDLE');
+  const [reqError, setReqError] = useState('');
 
   const [helpName, setHelpName] = useState('');
   const [helpEmail, setHelpEmail] = useState('');
@@ -58,7 +69,82 @@ export default function DeveloperPortal() {
     } catch (e) {
       setLocalCity('Bengaluru');
     }
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Verify if user exists in approved registry collection in Firestore
+        try {
+          const q = query(collection(db, 'approved_developers'), where('email', '==', user.email));
+          const querySnapshot = await getDocs(q);
+          if (querySnapshot.empty) {
+            await signOut(auth);
+            setCurrentUser(null);
+            setLoginError('Account credentials not found or access has not been approved by the founder yet.');
+          } else {
+            setCurrentUser(user);
+          }
+        } catch (err) {
+          console.error(err);
+          setCurrentUser(user);
+        }
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
+
+  // 15-Second Inactivity Auto-Logout Timer with Global Warning
+  useEffect(() => {
+    let inactivityTimer;
+    let warningTimer;
+    let countdownInterval;
+
+    const resetTimers = () => {
+      if (!currentUser) return;
+      setShowLogoutWarning(false);
+      setCountdownTime(15);
+
+      clearTimeout(inactivityTimer);
+      clearTimeout(warningTimer);
+      clearInterval(countdownInterval);
+
+      // Trigger warning banner at 10 seconds of inactivity
+      warningTimer = setTimeout(() => {
+        setShowLogoutWarning(true);
+        let timeLeft = 5;
+        setCountdownTime(timeLeft);
+        countdownInterval = setInterval(() => {
+          timeLeft -= 1;
+          setCountdownTime(timeLeft);
+          if (timeLeft <= 0) {
+            clearInterval(countdownInterval);
+          }
+        }, 1000);
+      }, 10000);
+
+      // Execute logout at 15 seconds of inactivity
+      inactivityTimer = setTimeout(() => {
+        signOut(auth);
+        setShowLogoutWarning(false);
+        alert('Session terminated due to inactivity for security purposes.');
+      }, 15000);
+    };
+
+    const events = ['mousemove', 'keydown', 'scroll', 'click', 'touchstart'];
+    if (currentUser) {
+      events.forEach(event => window.addEventListener(event, resetTimers));
+      resetTimers();
+    }
+
+    return () => {
+      events.forEach(event => window.removeEventListener(event, resetTimers));
+      clearTimeout(inactivityTimer);
+      clearTimeout(warningTimer);
+      clearInterval(countdownInterval);
+    };
+  }, [currentUser]);
 
   const handleHelpSubmit = async (e) => {
     e.preventDefault();
@@ -82,13 +168,32 @@ export default function DeveloperPortal() {
     }
   };
 
+  const verifyAccountApprovalAndSet = async (user) => {
+    try {
+      const q = query(collection(db, 'approved_developers'), where('email', '==', user.email));
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        await signOut(auth);
+        setLoginError('Account credentials not found or access has not been approved by the founder yet. Please request access.');
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error(error);
+      return true;
+    }
+  };
+
   const handleEmailLogin = async (e) => {
     e.preventDefault();
     setLoginError('');
     try {
-      await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
-      alert('Login successful. Redirecting to management dashboard...');
-      setShowAuthModal(false);
+      const userCredential = await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+      const isApproved = await verifyAccountApprovalAndSet(userCredential.user);
+      if (isApproved) {
+        alert('Authentication successful. Welcome to the management dashboard.');
+        setShowAuthModal(false);
+      }
     } catch (error) {
       console.error(error);
       setLoginError('Account credentials not found or you are not registered yet. Please register here by requesting access.');
@@ -99,19 +204,55 @@ export default function DeveloperPortal() {
     setLoginError('');
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      alert('Google authentication successful. Redirecting to management dashboard...');
-      setShowAuthModal(false);
+      const userCredential = await signInWithPopup(auth, provider);
+      const isApproved = await verifyAccountApprovalAndSet(userCredential.user);
+      if (isApproved) {
+        alert('Google authentication successful. Welcome to the management dashboard.');
+        setShowAuthModal(false);
+      }
     } catch (error) {
       console.error(error);
       setLoginError('Account credentials not found or you are not registered yet. Please register here by requesting access.');
     }
   };
 
-  const handleRequestAccessSubmit = (e) => {
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      alert('You have been securely signed out.');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleRequestAccessSubmit = async (e) => {
     e.preventDefault();
+    setReqError('');
+
+    // Anti-spam verification check
+    if (parseInt(spamAnswer) !== num1 + num2) {
+      setReqError('Incorrect anti-spam verification answer. Please resolve the arithmetic calculation correctly.');
+      return;
+    }
+
+    if (!consentGiven) {
+      setReqError('You must agree to the mandatory consent terms before submitting your access request.');
+      return;
+    }
+
     setReqStatus('SUBMITTING');
     try {
+      // Store access request in Firestore database
+      await addDoc(collection(db, 'access_requests'), {
+        name: reqName,
+        email: reqEmail,
+        organization: reqOrg,
+        purpose: reqPurpose,
+        status: 'PENDING',
+        createdAt: new Date().toISOString()
+      });
+
+      // Transmit details directly to founder WhatsApp
       const text = `*Developer Portal Access Request*\nName: ${reqName}\nEmail: ${reqEmail}\nOrganization: ${reqOrg}\nPurpose: ${reqPurpose}`;
       const waUrl = `https://wa.me/918329004424?text=${encodeURIComponent(text)}`;
       window.open(waUrl, '_blank');
@@ -124,9 +265,13 @@ export default function DeveloperPortal() {
         setReqEmail('');
         setReqOrg('');
         setReqPurpose('');
+        setConsentGiven(false);
+        setSpamAnswer('');
       }, 3000);
     } catch (error) {
+      console.error(error);
       setReqStatus('ERROR');
+      setReqError('Failed to record request in database. Please verify your connection.');
       setTimeout(() => setReqStatus('IDLE'), 3000);
     }
   };
@@ -141,6 +286,18 @@ export default function DeveloperPortal() {
   return (
     <div className="w-full min-h-screen bg-[#000000] text-white font-sans selection:bg-white selection:text-black overflow-x-hidden flex flex-col relative">
       
+      {/* Global Inactivity Auto-Logout Warning Banner */}
+      <AnimatePresence>
+        {showLogoutWarning && (
+          <motion.div 
+            initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -50 }}
+            className="fixed top-0 left-0 w-full z-[100] bg-[#ff4444] text-black py-3 px-6 text-center font-black flex items-center justify-center gap-4 shadow-2xl"
+          >
+            <span>SECURITY WARNING: Inactivity detected. Your session will be terminated in {countdownTime} seconds for protection purposes. Move your mouse or interact to remain signed in.</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <SEOHead 
         title="Developer Portal" 
         description="Authentication gateway for application programming interface access." 
@@ -234,15 +391,15 @@ export default function DeveloperPortal() {
                     <div className="flex flex-col items-center justify-center py-10 text-center">
                       <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#00ff88" strokeWidth="2" className="mb-4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                       <h3 className="text-[1.8rem] font-black mb-2 text-white">Access Request Transmitted</h3>
-                      <p className="text-[#888888] text-[0.95rem]">Your details have been sent directly to the founder via WhatsApp.</p>
-                    </div>
-                  ) : reqStatus === 'ERROR' ? (
-                    <div className="flex flex-col items-center justify-center py-10 text-center">
-                      <h3 className="text-[1.8rem] font-black mb-2 text-[#ff4444]">Transmission Failed</h3>
-                      <p className="text-[#888888] text-[0.95rem]">Please check your network connection and try again.</p>
+                      <p className="text-[#888888] text-[0.95rem]">Your details have been saved in our database and sent directly to the founder via WhatsApp.</p>
                     </div>
                   ) : (
                     <form onSubmit={handleRequestAccessSubmit} className="flex flex-col gap-4">
+                      {reqError && (
+                        <div className="p-4 bg-[#220000] border border-[#ff4444] rounded-xl text-[#ff8888] text-[0.9rem] leading-relaxed">
+                          {reqError}
+                        </div>
+                      )}
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[0.85rem] font-bold text-[#aaaaaa]">Full Name</label>
                         <input type="text" required placeholder="Enter your full name" value={reqName} onChange={e => setReqName(e.target.value)} className="w-full bg-[#000000] border border-[#333333] text-white px-4 py-3.5 rounded-xl outline-none focus:border-white transition-colors text-[0.95rem]" />
@@ -259,8 +416,23 @@ export default function DeveloperPortal() {
                         <label className="text-[0.85rem] font-bold text-[#aaaaaa]">Purpose of API Access</label>
                         <textarea required placeholder="Describe your technical integration requirements..." value={reqPurpose} onChange={e => setReqPurpose(e.target.value)} rows="3" className="w-full bg-[#000000] border border-[#333333] text-white px-4 py-3.5 rounded-xl outline-none focus:border-white transition-colors text-[0.95rem] resize-none"></textarea>
                       </div>
+
+                      {/* Anti-Spam Protection Field */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[0.85rem] font-bold text-[#aaaaaa]">Anti-Spam Verification: What is {num1} + {num2}?</label>
+                        <input type="number" required placeholder="Enter sum" value={spamAnswer} onChange={e => setSpamAnswer(e.target.value)} className="w-full bg-[#000000] border border-[#333333] text-white px-4 py-3.5 rounded-xl outline-none focus:border-white transition-colors text-[0.95rem]" />
+                      </div>
+
+                      {/* Mandatory Consent Checkbox */}
+                      <div className="flex items-start gap-3 mt-2">
+                        <input type="checkbox" required checked={consentGiven} onChange={e => setConsentGiven(e.target.checked)} id="consent" className="mt-1 w-4 h-4 accent-white rounded cursor-pointer" />
+                        <label htmlFor="consent" className="text-[0.85rem] text-[#aaaaaa] cursor-pointer leading-relaxed">
+                          I agree to share my organizational details for administrative review and security verification by the founder.
+                        </label>
+                      </div>
+
                       <button disabled={reqStatus === 'SUBMITTING'} type="submit" className="w-full bg-white text-black py-4 rounded-xl font-black mt-2 hover:bg-[#e0e0e0] transition-colors disabled:opacity-50">
-                        {reqStatus === 'SUBMITTING' ? 'TRANSMITTING...' : 'Submit Request to Founder'}
+                        {reqStatus === 'SUBMITTING' ? 'TRANSMITTING AND SAVING...' : 'Submit Request to Founder'}
                       </button>
                     </form>
                   )}
@@ -280,10 +452,26 @@ export default function DeveloperPortal() {
             <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="white" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
           </div>
           <h1 className="text-[2.5rem] md:text-[3.5rem] font-black tracking-tighter mb-4">Engineering Access</h1>
-          <p className="text-[#888888] font-medium text-[1.1rem] mb-8">Authenticate with your enterprise credentials to generate and manage production API keys.</p>
-          <button onClick={() => { setAuthMode('REQUEST'); setShowAuthModal(true); }} className="w-full py-4 bg-white text-black font-black rounded-xl hover:bg-[#e0e0e0] transition-colors outline-none text-[1.05rem]">
-            Request Access
-          </button>
+          <p className="text-[#888888] font-medium text-[1.1rem] mb-8">
+            {currentUser ? `Signed in as ${currentUser.email}` : "Authenticate with your pre-approved enterprise credentials or request access."}
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4">
+            {currentUser ? (
+              <button onClick={handleSignOut} className="w-full py-4 bg-[#220000] border border-[#ff4444] text-[#ff8888] font-black rounded-xl hover:bg-[#330000] transition-colors outline-none text-[1.05rem]">
+                Sign Out ({currentUser.email})
+              </button>
+            ) : (
+              <>
+                <button onClick={() => { setAuthMode('LOGIN'); setShowAuthModal(true); }} className="flex-1 py-4 bg-white text-black font-black rounded-xl hover:bg-[#e0e0e0] transition-colors outline-none text-[1.05rem]">
+                  Sign In
+                </button>
+                <button onClick={() => { setAuthMode('REQUEST'); setShowAuthModal(true); }} className="flex-1 py-4 bg-[#111111] border border-[#333333] text-white font-black rounded-xl hover:bg-[#222222] transition-colors outline-none text-[1.05rem]">
+                  Request Access
+                </button>
+              </>
+            )}
+          </div>
         </motion.div>
 
         {/* Section 1: Authentication Logic */}
@@ -293,7 +481,7 @@ export default function DeveloperPortal() {
           </div>
           <h2 className="text-[1.75rem] font-black tracking-tight">1. Authentication and Access Control Logic</h2>
           <p className="text-[#cccccc] leading-relaxed text-[1.05rem]">
-            All gateway requests require verified institutional credentials. Enterprise administrators manage permission scopes and credential rotation cycles directly through the secure authentication interface.
+            All gateway requests require verified institutional credentials approved directly by the founder. Enterprise administrators manage permission scopes and security parameters through the secure portal interface.
           </p>
         </motion.section>
 
