@@ -106,7 +106,7 @@ export default function Team() {
       <SEOHead 
         title="Leadership Team" 
         description="Meet the executive board and organizational leadership driving our technological innovations."
-        canonicalUrl="https://anyastro.tech/team"
+        canonicalUrl="https://anyastro.web.app/team"
       />
 
       {/* Minimal Vector Background Illustration */}
