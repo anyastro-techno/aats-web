@@ -5,7 +5,7 @@ import SEOHead from '../components/SEOHead';
 import MaintenanceHeader from '../components/MaintenanceHeader';
 import MaintenanceFooter from '../components/MaintenanceFooter';
 import AccessibilityWidget from '../components/AccessibilityWidget';
-import { LanguageModal, HelpCenterModal, DeveloperModal } from '../components/MaintenanceModals';
+import { LanguageModal, HelpCenterModal, DeveloperModal, SitemapModal } from '../components/MaintenanceModals';
 import { t, languageOptions } from '../utils/translations';
 
 export default function Team() {
@@ -15,6 +15,7 @@ export default function Team() {
   const [showHelpCenter, setShowHelpCenter] = useState(false);
   const [showDeveloper, setShowDeveloper] = useState(false);
   const [showAccessibility, setShowAccessibility] = useState(false);
+  const [showSitemap, setShowSitemap] = useState(false);
   const navigate = useNavigate();
 
   // Help Center Form States
@@ -106,20 +107,14 @@ export default function Team() {
       <SEOHead 
         title="Leadership Team" 
         description="Meet the executive board and organizational leadership driving our technological innovations."
-        canonicalUrl="https://anyastro.web.app/team"
+        canonicalUrl="https://anyastro.tech/team"
       />
-
-      {/* Minimal Vector Background Illustration */}
-      <svg className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="10%" cy="20%" r="400" fill="none" stroke="white" strokeWidth="1" />
-        <circle cx="90%" cy="80%" r="600" fill="none" stroke="white" strokeWidth="1" />
-        <line x1="0" y1="50%" x2="100%" y2="50%" stroke="white" strokeWidth="0.5" strokeDasharray="10 10" />
-      </svg>
 
       {/* Global Modals and Widgets */}
       <DeveloperModal showDeveloper={showDeveloper} setShowDeveloper={setShowDeveloper} currentT={currentT} />
       <LanguageModal showLangPrompt={showLangPrompt} setShowLangPrompt={setShowLangPrompt} languageOptions={languageOptions} lang={lang} setLang={setLang} />
       <HelpCenterModal showHelpCenter={showHelpCenter} setShowHelpCenter={setShowHelpCenter} currentT={currentT} helpStatus={helpStatus} helpName={helpName} setHelpName={setHelpName} helpEmail={helpEmail} setHelpEmail={setHelpEmail} helpIssue={helpIssue} setHelpIssue={setHelpIssue} handleHelpSubmit={handleHelpSubmit} />
+      <SitemapModal showSitemap={showSitemap} setShowSitemap={setShowSitemap} navigate={navigate} />
       <AccessibilityWidget isOpen={showAccessibility} onClose={() => setShowAccessibility(false)} />
 
       {/* Master Navigation Header */}
@@ -208,7 +203,7 @@ export default function Team() {
       </div>
 
       {/* Master Navigation Footer */}
-      <MaintenanceFooter currentT={currentT} setShowDeveloper={setShowDeveloper} setShowHelpCenter={setShowHelpCenter} localCity={localCity} />
+      <MaintenanceFooter currentT={currentT} setShowDeveloper={setShowDeveloper} setShowHelpCenter={setShowHelpCenter} setShowSitemap={setShowSitemap} localCity={localCity} />
       
     </div>
   );
