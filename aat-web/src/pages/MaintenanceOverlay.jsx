@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { t, languageOptions } from '../utils/translations';
 import MaintenanceHeader from '../components/MaintenanceHeader';
 import MaintenanceFooter from '../components/MaintenanceFooter';
-import { OnboardingModal, DeveloperModal, LanguageModal, HelpCenterModal } from '../components/MaintenanceModals';
+import { OnboardingModal, DeveloperModal, LanguageModal, HelpCenterModal, SitemapModal } from '../components/MaintenanceModals';
 import AccessibilityWidget from '../components/AccessibilityWidget';
 
 export default function MaintenanceOverlay() {
@@ -17,6 +17,7 @@ export default function MaintenanceOverlay() {
   const [showDeveloper, setShowDeveloper] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [showAccessibility, setShowAccessibility] = useState(false);
+  const [showSitemap, setShowSitemap] = useState(false);
   const navigate = useNavigate();
   
   // Help Center Form States
@@ -119,6 +120,7 @@ export default function MaintenanceOverlay() {
       <DeveloperModal showDeveloper={showDeveloper} setShowDeveloper={setShowDeveloper} currentT={currentT} />
       <LanguageModal showLangPrompt={showLangPrompt} setShowLangPrompt={setShowLangPrompt} languageOptions={languageOptions} lang={lang} setLang={setLang} />
       <HelpCenterModal showHelpCenter={showHelpCenter} setShowHelpCenter={setShowHelpCenter} currentT={currentT} helpStatus={helpStatus} helpName={helpName} setHelpName={setHelpName} helpEmail={helpEmail} setHelpEmail={setHelpEmail} helpIssue={helpIssue} setHelpIssue={setHelpIssue} handleHelpSubmit={handleHelpSubmit} />
+      <SitemapModal showSitemap={showSitemap} setShowSitemap={setShowSitemap} navigate={navigate} />
 
       {/* ACCESSIBILITY MODAL CONTAINER */}
       <AccessibilityWidget isOpen={showAccessibility} onClose={() => setShowAccessibility(false)} />
@@ -254,6 +256,7 @@ export default function MaintenanceOverlay() {
 
         {/* SECTION 5: INLINE CONTACT FORM */}
         <motion.div
+          id="contact-section"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -279,7 +282,7 @@ export default function MaintenanceOverlay() {
       </div>
 
       {/* FOOTER */}
-      <MaintenanceFooter currentT={currentT} setShowDeveloper={setShowDeveloper} setShowHelpCenter={setShowHelpCenter} localCity={localCity} />
+      <MaintenanceFooter currentT={currentT} setShowDeveloper={setShowDeveloper} setShowHelpCenter={setShowHelpCenter} setShowSitemap={setShowSitemap} localCity={localCity} />
 
     </div>
   );
