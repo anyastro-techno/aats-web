@@ -159,3 +159,58 @@ export function HelpCenterModal({ showHelpCenter, setShowHelpCenter, currentT, h
     </AnimatePresence>
   );
 }
+
+export function SitemapModal({ showSitemap, setShowSitemap, navigate }) {
+  const sitemapLinks = [
+    { title: "Main Platform Dashboard", path: "/" },
+    { title: "Organizational Leadership Team", path: "/team" },
+    { title: "Career Opportunities", path: "/company/careers" },
+    { title: "Brand Guidelines and Assets", path: "/company/brand-guidelines" },
+    { title: "Media Kit and Press Resources", path: "/company/media-kit" },
+    { title: "Press Releases and Announcements", path: "/company/press-kit" },
+    { title: "Privacy Policy", path: "/legal/privacy-policy" },
+    { title: "Terms of Service", path: "/legal/terms-of-service" },
+    { title: "Cookie Policy", path: "/legal/cookie-policy" },
+    { title: "Accessibility Statement", path: "/legal/accessibility-statement" },
+    { title: "Security Policy", path: "/legal/security-policy" },
+    { title: "Responsible Disclosure Protocol", path: "/legal/responsible-disclosure" },
+    { title: "API Documentation", path: "/developers/api-documentation" },
+    { title: "Developer Portal", path: "/developers/developer-portal" }
+  ];
+
+  return (
+    <AnimatePresence>
+      {showSitemap && (
+        <motion.div 
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"
+        >
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+            className="w-full max-w-[600px] bg-[#050505] border border-[#333333] rounded-3xl p-8 flex flex-col shadow-2xl relative max-h-[85vh] overflow-y-auto"
+          >
+            <button onClick={() => setShowSitemap(false)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#888888] hover:text-white transition-colors outline-none">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            
+            <h2 className="text-[1.8rem] font-black tracking-tight mb-2 text-white">Platform Directory</h2>
+            <p className="text-[#888888] text-[0.95rem] mb-6">Select any section below to navigate directly to the requested page.</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {sitemapLinks.map((link, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => { setShowSitemap(false); navigate(link.path); }}
+                  className="p-4 rounded-xl bg-[#0a0a0a] border border-[#222222] hover:border-white text-left transition-colors flex items-center justify-between group outline-none"
+                >
+                  <span className="font-bold text-[0.95rem] text-[#cccccc] group-hover:text-white">{link.title}</span>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#555555] group-hover:text-white transition-colors"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}

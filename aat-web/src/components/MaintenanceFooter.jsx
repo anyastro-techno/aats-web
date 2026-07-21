@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function MaintenanceFooter({ currentT, setShowDeveloper, setShowHelpCenter, localCity }) {
+export default function MaintenanceFooter({ currentT, setShowDeveloper, setShowHelpCenter, setShowSitemap, localCity }) {
   return (
     <footer className="w-full max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-8 px-8 md:px-16 py-8 border-t border-[#111111] relative z-20 mt-auto">
       
@@ -18,6 +18,8 @@ export default function MaintenanceFooter({ currentT, setShowDeveloper, setShowH
         <a href="https://www.linkedin.com/company/anyastro-techno/services/request-proposal/" target="_blank" rel="noreferrer" className="hover:text-white transition-colors outline-none">{currentT.service_req}</a>
         <span className="w-1 h-1 bg-[#333333] rounded-full"></span>
         <button onClick={() => setShowHelpCenter(true)} className="hover:text-white transition-colors outline-none">{currentT.help}</button>
+        <span className="w-1 h-1 bg-[#333333] rounded-full"></span>
+        <button onClick={() => setShowSitemap(true)} className="hover:text-white transition-colors outline-none">Sitemap</button>
         <span className="w-1 h-1 bg-[#333333] rounded-full"></span>
         <div className="flex items-center gap-2 hover:text-white transition-colors cursor-default">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
