@@ -1,6 +1,17 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 
 export default function MaintenanceHeader({ currentT, setShowHelpCenter, setShowLangPrompt, navigate, onToggleAccessibility }) {
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+
+  const handleContactScroll = () => {
+    const contactElement = document.getElementById('contact-section') || document.querySelector('form');
+    if (contactElement) {
+      contactElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <header className="w-full flex items-center justify-between px-8 md:px-16 py-8 animate-fade relative z-50">
       <div className="flex items-center gap-2">
@@ -28,9 +39,21 @@ export default function MaintenanceHeader({ currentT, setShowHelpCenter, setShow
           {currentT.lang}
         </button>
 
-        <button onClick={() => navigate('/')} className="bg-white text-black px-5 py-2 rounded-full flex items-center gap-2 hover:bg-[#e0e0e0] transition-colors outline-none">
-          {currentT.back}
-        </button>
+        {isHome ? (
+          <button 
+            onClick={handleContactScroll} 
+            className="bg-white text-black px-5 py-2 rounded-full flex items-center gap-2 hover:bg-[#e0e0e0] transition-colors outline-none"
+          >
+            {currentT.contact || 'Contact'}
+          </button>
+        ) : (
+          <button 
+            onClick={() => navigate('/')} 
+            className="bg-white text-black px-5 py-2 rounded-full flex items-center gap-2 hover:bg-[#e0e0e0] transition-colors outline-none"
+          >
+            {currentT.back || 'Home'}
+          </button>
+        )}
       </div>
     </header>
   );
